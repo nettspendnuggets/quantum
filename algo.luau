@@ -115,4 +115,12 @@ function algo.vqe(hamiltonian: matrix, depth: number): number
 	return objective(params)
 end
 
+function algo.qaoa(qubits : qubits, p : number, gammas : {number}, betas : {number}) : qubits
+	for k = 1, p do
+		qubits = gate.cost_hamiltonian(qubits, gammas[k])
+		qubits = gate.mixer_hamiltonian(qubits, betas[k])
+	end
+	return qubits
+end
+
 return algo

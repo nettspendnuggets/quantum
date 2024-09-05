@@ -209,4 +209,27 @@ function gate.cnot(control, target)
 	return cnot
 end
 
+function gate.cost_hamiltonian(qs: qubits, gamma: number): qubits
+	for i = 1, #qs do
+		local z_gate = gate.new(
+			cpx.new(1, 0), cpx.new(0, 0),
+			cpx.new(0, 0), cpx.exp(cpx.new(0, -gamma))
+		)
+		qs = gate.apply_ex(qs, z_gate)
+	end
+	return qs
+end
+
+function gate.mixer_hamiltonian(qs: qubits, beta: number): qubits
+	for i = 1, #qs do
+		local x_gate = gate.new(
+			cpx.mul(cpx.exp(cpx.new(0, -beta)), cpx.new(0, 0)),
+			cpx.mul(cpx.exp(cpx.new(0, beta)), cpx.new(1, 0)),
+			cpx.new(1, 0), cpx.new(0, 0)
+		)
+		qs = gate.apply_ex(qs, x_gate)
+	end
+	return qs
+end
+
 return gate
