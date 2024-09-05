@@ -2,6 +2,10 @@
 --!optimize 2
 --!strict
 
+--[[
+	NOTE: these are extremely basic, try to reimplement them in some way that is more complex
+]]
+
 type complex = {r : number, i : number}
 type qubit = {complex}
 type qubits = {qubit}
@@ -159,14 +163,199 @@ end
 
 err.steane = steane
 
---[[
-	TODO_LIST:
-		- bitflip code
-		- signflip code
-		- bosonic code:
-			+ binomial code
-			+ cat code
+local surface = {}
 
-]]
+function surface.create_grid(size: number): qubits
+	local qubits = {}
+	for i = 1, size * size do
+		qubits[i] = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+	end
+	return qubits
+end
+
+function surface.stabilizers(size: number): (matrix, matrix)
+	local x_stabilizers = {}
+	local z_stabilizers = {}
+
+	for i = 1, size do
+		x_stabilizers[i] = {}
+		z_stabilizers[i] = {}
+		for j = 1, size do
+			x_stabilizers[i][j] = cpx.new(0, 0)
+			z_stabilizers[i][j] = cpx.new(0, 0)
+		end
+	end
+
+	for i = 1, size do
+		for j = 1, size do
+			x_stabilizers[i][j] = cpx.new(1, 0)
+		end
+	end
+
+	for i = 1, size - 1 do
+		for j = 1, size - 1 do
+			z_stabilizers[i][j] = cpx.new(1, 0)
+		end
+	end
+
+	return x_stabilizers, z_stabilizers
+end
+
+function surface.measure_syndrome(qubits: qubits, x_stabilizers: matrix, z_stabilizers: matrix): ({complex}, {complex})
+	local x_syndrome = {}
+	local z_syndrome = {}
+
+	for i = 1, #x_stabilizers do
+		x_syndrome[i] = cpx.new()
+		for j = 1, #x_stabilizers[i] do
+			x_syndrome[i] = cpx.add(x_syndrome[i], cpx.mul(qubits[j][1], x_stabilizers[i][j]))
+		end
+	end
+
+	for i = 1, #z_stabilizers do
+		z_syndrome[i] = cpx.new()
+		for j = 1, #z_stabilizers[i] do
+			z_syndrome[i] = cpx.add(z_syndrome[i], cpx.mul(qubits[j][1], z_stabilizers[i][j]))
+		end
+	end
+
+	return x_syndrome, z_syndrome
+end
+
+function surface.correct_errors(qubits: qubits, x_syndrome: {number}, z_syndrome: {number}): qubits
+	for i = 1, #x_syndrome do
+		if x_syndrome[i] == 1 then
+			qubits[i] = gate.apply(qubits[i], preset.paulix)
+		end
+	end
+
+	for i = 1, #z_syndrome do
+		if z_syndrome[i] == 1 then
+			qubits[i] = gate.apply(qubits[i], preset.pauliz)
+		end
+	end
+
+	return qubits
+end
+
+err.surface = surface
+
+local bitflip = {}
+
+function bitflip.encode(qubit: qubit): qubits
+	local encoded = {}
+	for i = 1, 3 do
+		encoded[i] = qb.new(cpx.new(qubit[1].r, qubit[1].i), cpx.new(0, 0))
+	end
+	return encoded
+end
+
+function bitflip.apply_error(encoded: qubits, qubit_index: number, error_type: string): qubits
+	if error_type == "bitflip" then
+		encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.paulix)
+	elseif error_type == "phaseflip" then
+		encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.pauliz)
+	elseif error_type == "both" then
+		encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.paulix)
+		encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.pauliz)
+	else
+		error("Unknown error type")
+	end
+	return encoded
+end
+
+function bitflip.decode(encoded: qubits): qubit
+	local counts = {0, 0}
+	for i = 1, 3 do
+		if encoded[i][1].r > 0.5 then
+			counts[1] = counts[1] + 1
+		else
+			counts[2] = counts[2] + 1
+		end
+	end
+	local state = counts[1] > counts[2] and cpx.new(1, 0) or cpx.new(0, 0)
+	return qb.new(state, cpx.new(0, 0))
+end
+
+function bitflip.correct_errors(encoded: qubits): qubits
+	local syndrome = {0, 0, 0}
+	for i = 1, 3 do
+		syndrome[i] = (encoded[i][1].r > 0.5 and 1 or 0)
+	end
+
+	local majority = (syndrome[1] + syndrome[2] + syndrome[3]) / 2
+	for i = 1, 3 do
+		if syndrome[i] ~= majority then
+			encoded[i] = gate.apply(encoded[i], preset.paulix)
+		end
+	end
+
+	return encoded
+end
+
+err.bitflip = bitflip
+
+local signflip = {}
+
+function signflip.encode(qubit: qubit): qubits
+	local encoded = {}
+	for i = 1, 3 do
+		encoded[i] = qb.new(cpx.new(qubit[1].r, qubit[1].i), cpx.new(0, 0))
+	end
+	return encoded
+end
+
+function signflip.apply_error(encoded: qubits, qubit_index: number): qubits
+	encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.pauliz)
+	return encoded
+end
+
+function signflip.decode(encoded: qubits): qubit
+	local counts = {0, 0}
+	for i = 1, 3 do
+		if encoded[i][1].r > 0.5 then
+			counts[1] = counts[1] + 1
+		else
+			counts[2] = counts[2] + 1
+		end
+	end
+	local state = counts[1] > counts[2] and cpx.new(1, 0) or cpx.new(0, 0)
+	return qb.new(state, cpx.new(0, 0))
+end
+
+function signflip.measure_syndrome(encoded: qubits): {number}
+	local syndrome = {0, 0}
+	for i = 1, 3 do
+		if encoded[i][1].r < 0.5 then
+			syndrome[i] = 1
+		else
+			syndrome[i] = 0
+		end
+	end
+	return syndrome
+end
+
+function signflip.correct_errors(encoded: qubits, syndrome: {number}): qubits
+	for i = 1, 3 do
+		if syndrome[i] == 1 then
+			encoded[i] = gate.apply(encoded[i], preset.pauliz)
+		end
+	end
+	return encoded
+end
+
+err.signflip = signflip
+
+local cat = {}
+
+-- TODO: make cat codes
+
+err.cat = cat
+
+local binomial = {}
+
+-- TODO: make this too
+
+err.binomial = binomial
 
 return err
