@@ -1,9 +1,3 @@
--- circuitvis.luau
-
---!native
---!optimize 2
---!strict
-
 local circuitvis = {}
 
 export type gate = string
@@ -17,7 +11,7 @@ local function creategrid(rows: number, cols: number): grid
         grid[i] = table.create(cols, " ")
     end
     return grid
-end        
+end
 
 local function drawwire(grid: grid, row: number, startcol: number, endcol: number)
     for col = startcol, endcol do
@@ -74,12 +68,12 @@ function circuitvis.visualize(circuit: circuit): string
             end
         end
     end
-
+    
     local visualcircuit = ""
     for i = 1, #grid do
-        visualcircuit = visualcircuit .. table.contact(grid[i]) .. "\n"
+        visualcircuit = visualcircuit .. table.concat(grid[i]) .. "\n"
     end
-
+    
     return visualcircuit
 end
 
