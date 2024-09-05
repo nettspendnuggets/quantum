@@ -8,9 +8,7 @@ type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 
-local cpx = require("cpx.luau")
 local gate = require("gate.luau")
-local mtx = require("mtx.luau")
 local qb = require("qb.luau")
 local preset = require("preset.luau")
 
