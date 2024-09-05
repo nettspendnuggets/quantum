@@ -3,7 +3,7 @@
 --!strict
 
 --[[-----------------------------------------------------------]]--
---++ quantum simulation written in luauu                        ++--
+--++ quantum simulation written in luauu                       ++--
 --++ credits:                                                  ++--
 --++    - axtrct                                               ++--
 --++    - jiface                                               ++--
