@@ -156,7 +156,7 @@ function qb.mmeasure_ex(qubits: qubits): {number}
 		end
 	end
 	return outcome
-  end
+end
 
 function qb.expectation(qubits : qubits, hamiltonian : matrix) : number
 	local num_qubits = #qubits
