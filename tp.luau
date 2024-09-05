@@ -24,7 +24,6 @@ function tp.entangle() : qubits
 end
 
 function tp.bell_measurement(qubits: qubits) : (number, number)
-	-- Apply Hadamard and CNOT gates to prepare for measurement
 	qubits[1] = gate.apply(qubits[1], preset.hadamard)
 	qubits[2] = gate.apply(qubits[2], preset.cnot)
 
