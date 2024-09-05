@@ -220,6 +220,17 @@ function qb.post_select(qubits: qubits, expected: {number}): qubits?
 	end
 end
 
+function qb.entangle(n: number): {qubits}
+	local entangled_pairs = {}
+	for i = 1, n do
+		local qubits = qb.new_ex(2)
+		qubits[1] = qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, 0))
+		qubits[2] = qb.new(cpx.new(0, 0), cpx.new(1 / math.sqrt(2), 0))
+		table.insert(entangled_pairs, qubits)
+	end
+	return entangled_pairs
+end
+
 --[[
 function qb.mmeasure(qubits: qubits): number
 	local probs = {}
