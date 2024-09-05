@@ -35,7 +35,7 @@ end
 
 local function drawvertical(grid: grid, startrow: number, endrow: number, col: number)
     for row = startrow, endrow do
-        if grid[row][col] = " " then
+        if grid[row][col] == " " then
             grid[row][col] = "│"
         end
     end
