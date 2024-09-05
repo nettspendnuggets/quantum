@@ -455,4 +455,64 @@ end
 
 err.binomial = binomial
 
+-- repetition too 
+local repetition = {}
+
+function repetition.encode(qubit: qubit, n: number): qubits
+	local encoded = {}
+	for i = 1, n do
+		encoded[i] = qb.new(cpx.new(qubit[1].r, qubit[1].i), cpx.new(qubit[2].r, qubit[2].i))
+	end
+	return encoded
+end
+
+function repetition.apply_error(encoded: qubits, error_rate: number): qubits
+	for i = 1, #encoded do
+		if math.random() < error_rate then
+			encoded[i] = gate.apply(encoded[i], preset.paulix)
+		end
+	end
+	return encoded
+end
+
+function repetition.measure_syndrome(encoded: qubits): {number}
+	local syndrome = {}
+	for i = 1, #encoded - 1 do
+		local parity = qb.mmeasure_ex(gate.apply_ex({encoded[i], encoded[i+1]}, preset.cnot))[1]
+		syndrome[i] = parity
+	end
+	return syndrome
+end
+
+function repetition.correct_errors(encoded: qubits, syndrome: {number}): qubits
+	local error_positions = {}
+	for i = 1, #syndrome do
+		if syndrome[i] == 1 then
+			table.insert(error_positions, i)
+		end
+	end
+	
+	if #error_positions % 2 == 1 then
+		table.insert(error_positions, #encoded)
+	end
+	
+	for _, pos in ipairs(error_positions) do
+		encoded[pos] = gate.apply(encoded[pos], preset.paulix)
+	end
+	
+	return encoded
+end
+
+function repetition.decode(encoded: qubits): qubit
+	local sum_x = cpx.new(0, 0)
+	local sum_y = cpx.new(0, 0)
+	for i = 1, #encoded do
+		sum_x = cpx.add(sum_x, encoded[i][1])
+		sum_y = cpx.add(sum_y, encoded[i][2])
+	end
+	return qb.new(cpx.div(sum_x, cpx.new(#encoded, 0)), cpx.div(sum_y, cpx.new(#encoded, 0)))
+end
+
+err.repetition = repetition
+
 return err
