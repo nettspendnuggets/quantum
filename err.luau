@@ -348,14 +348,110 @@ err.signflip = signflip
 
 local cat = {}
 
--- TODO: make cat codes
+function cat.encode(qubit: qubit, n: number): qubits
+    local encoded = {}
+    for i = 1, n do
+        encoded[i] = qb.new(cpx.new(qubit[1].r, qubit[1].i), cpx.new(qubit[2].r, qubit[2].i))
+    end
+    return encoded
+end
+
+function cat.apply_error(encoded: qubits, qubit_index: number, error_type: string): qubits
+    if error_type == "bitflip" then
+        encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.paulix)
+    elseif error_type == "phaseflip" then
+        encoded[qubit_index] = gate.apply(encoded[qubit_index], preset.pauliz)
+    else
+        error("unknown error type")
+    end
+    return encoded
+end
+
+function cat.measure_syndrome(encoded: qubits): {number}
+    local syndrome = {}
+    for i = 1, #encoded - 1 do
+        syndrome[i] = qb.measure(gate.apply_ex({encoded[i], encoded[i+1]}, preset.cnot))[1]
+    end
+    return syndrome
+end
+
+function cat.correct_errors(encoded: qubits, syndrome: {number}): qubits
+    for i = 1, #syndrome do
+        if syndrome[i] == 1 then
+            encoded[i] = gate.apply(encoded[i], preset.paulix)
+        end
+    end
+    return encoded
+end
+
+function cat.decode(encoded: qubits): qubit
+    return encoded[1]
+end
 
 err.cat = cat
 
 local binomial = {}
 
--- TODO: make this too
+function binomial.encode(qubit: qubit, n: number): qubits
+    local encoded = {}
+    for i = 0, n do
+        local amplitude = cpx.mul(cpx.new(math.sqrt(choose(n, i)), 0), qubit[1])
+        encoded[i+1] = qb.new(amplitude, cpx.new(0, 0))
+    end
+    return encoded
+end
+
+function binomial.apply_error(encoded: qubits, error_type: string): qubits
+    if error_type == "loss" then
+        local index = math.random(1, #encoded)
+        encoded[index] = qb.new(cpx.new(0, 0), cpx.new(0, 0))
+    elseif error_type == "dephasing" then
+        for i = 1, #encoded do
+            encoded[i] = gate.apply(encoded[i], preset.pauliz)
+        end
+    else
+        error("unknown error type")
+    end
+    return encoded
+end
+
+function binomial.measure_syndrome(encoded: qubits): number
+    local total = 0
+    for i = 1, #encoded do
+        total = total + qb.measure(encoded[i])[1] * (i - 1)
+    end
+    return total
+end
+
+function binomial.correct_errors(encoded: qubits, syndrome: number): qubits
+    local n = #encoded - 1
+    if syndrome ~= n // 2 then
+        local shift = n // 2 - syndrome
+        local newencoded = {}
+        for i = 1, #encoded do
+            local newindex = i + shift
+            if newindex >= 1 and newindex <= #encoded then
+                newencoded[newindex] = encoded[i]
+            end
+        end
+        encoded = newencoded
+    end
+    return encoded
+end
+
+function binomial.decode(encoded: qubits): qubit
+    local n = #encoded - 1
+    return encoded[n // 2 + 1]
+end
 
 err.binomial = binomial
+
+local function choose(n: number, k: number): number
+    if k == 0 or k == n then
+        return 1
+    else
+        return choose(n - 1, k - 1) + choose(n - 1, k)
+    end
+end
 
 return err
