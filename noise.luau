@@ -25,8 +25,8 @@ type noise_meta = typeof(setmetatable({} :: {
 	depolarizing : number;
 }, {} :: noise_obj))
 
-local gate = require("gate.luau")
-local preset = require("preset.luau")
+local gate = require("gate")
+local preset = require("preset")
 
 local noise : noise_obj = {} :: noise_obj
 noise.__index = noise

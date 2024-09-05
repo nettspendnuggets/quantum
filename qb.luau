@@ -8,9 +8,9 @@ type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 
-local cpx = require("cpx.luau")
-local gate = require("gate.luau")
-local mtx = require("mtx.luau")
+local cpx = require("cpx")
+local gate = require("gate")
+local mtx = require("mtx")
 
 -- NOTE: THIS IS FOR SINGULAR QUBIT SYSTEMS
 -- MULTI-QUBIT FUNCTIONS WILL HAVE "m" AT THE START OF THE FUNCTION NAME

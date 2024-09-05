@@ -6,7 +6,7 @@ type complex = {r : number, i : number}
 type matrix = {{complex}}
 type matrix_sz = {r : number, c : number}
 
-local cpx = require("cpx.luau")
+local cpx = require("cpx")
 
 local mtx = {}
 

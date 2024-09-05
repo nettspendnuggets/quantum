@@ -18,11 +18,16 @@ export type gate = {{complex}}
 export type matrix = {{complex}}
 export type matrix_sz = {r : number, c : number}
 return {
-	mtx = require("mtx.luau");
-	cpx = require("cpx.luau");
-	qb = require("qb.luau");
-	gate = require("gate.luau");
-	preset = require("preset.luau");
-	wave = require("wave.luau");
-	algo = require("algo.luau")
+	mtx = require("mtx");
+	cpx = require("cpx");
+	qb = require("qb");
+	gate = require("gate");
+	preset = require("preset");
+	wave = require("wave");
+	algo = require("algo");
+	err = require("err");
+	noise = require("noise");
+	tp = require("tp");
+	circuitvis = require("circuitvis");
+	ent = require("ent");
 }

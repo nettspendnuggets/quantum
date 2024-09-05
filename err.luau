@@ -12,11 +12,11 @@ type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 
-local cpx = require("cpx.luau")
-local gate = require("gate.luau")
-local mtx = require("mtx.luau")
-local qb = require("qb.luau")
-local preset = require("preset.luau")
+local cpx = require("cpx")
+local gate = require("gate")
+local mtx = require("mtx")
+local qb = require("qb")
+local preset = require("preset")
 
 local err = {}
 
