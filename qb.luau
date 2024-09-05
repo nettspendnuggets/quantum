@@ -156,8 +156,8 @@ function qb.expectation(qubits : qubits, hamiltonian : matrix) : number
 	end
 
 	for i, qubit in ipairs(qubits) do
-		local alpha = qubit[1]
-		local beta = qubit[2]
+		local _alpha = qubit[1]
+		local _beta = qubit[2]
 
 		-- placeholder
 		-- note: jiface do this thig
