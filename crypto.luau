@@ -208,9 +208,9 @@ function b92.prepare_qubits(bits: {number}): qubits
 	local qubits = {}
 	for i = 1, #bits do
 		if bits[i] == 0 then
-			qubits[i] = qb.new(cpx.new(1, 0), cpx.new(0, 0))  -- |0>
+			qubits[i] = qb.new(cpx.new(1, 0), cpx.new(0, 0))-- |0>
 		else
-			qubits[i] = qb.new(cpx.new(0, 0), cpx.new(1, 0))  -- |1>
+			qubits[i] = qb.new(cpx.new(0, 0), cpx.new(1, 0))-- |1>
 		end
 	end
 	return qubits
@@ -239,5 +239,105 @@ function b92.sift_key(bits: {number}, bases: {number}, measured_bases: {number})
 end
 
 crypto.b92 = b92
+
+local six_states = {}
+
+function six_states.generate_random_bits(n: number): bits
+	local bits = {}
+	for i = 1, n do
+		bits[i] = math.random(0, 1)
+	end
+	return bits
+end
+
+function six_states.generate_random_bases(n: number): bits
+	local bases = {}
+	for i = 1, n do
+		bases[i] = math.random(0, 5)
+	end
+	return bases
+end
+
+function six_states.prepare_qubits(bits: bits, bases: bits): qubits
+	local qubits = {}
+	for i = 1, #bits do
+		local bit = bits[i]
+		local base = bases[i]
+		local qubit
+
+		if base == 0 then
+			qubit = bit == 0 and qb.new(cpx.new(1, 0), cpx.new(0, 0)) or qb.new(cpx.new(0, 0), cpx.new(1, 0))
+		elseif base == 1 then
+			qubit = bit == 0 and qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(1 / math.sqrt(2), 0)) or qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(-1 / math.sqrt(2), 0))
+		elseif base == 2 then
+			qubit = bit == 0 and qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, 1 / math.sqrt(2))) or qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, -1 / math.sqrt(2)))
+		elseif base == 3 then
+			qubit = bit == 0 and qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(1 / math.sqrt(2), 0)) or qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(-1 / math.sqrt(2), 0))
+		elseif base == 4 then
+			qubit = bit == 0 and qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, -1 / math.sqrt(2))) or qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, 1 / math.sqrt(2)))
+		elseif base == 5 then
+			qubit = bit == 0 and qb.new(cpx.new(1, 0), cpx.new(0, 1)) or qb.new(cpx.new(1, 0), cpx.new(0, -1))
+		end
+
+		qubits[i] = qubit
+	end
+	return qubits
+end
+
+function six_states.measure_qubits(qubits: qubits, bases: bits): bits
+	local measured_bits = {}
+	for i = 1, #qubits do
+		local qubit = qubits[i]
+		local base = bases[i]
+		local result
+
+		if base == 1 or base == 3 or base == 4 then
+			qubit = gate.apply(qubit, preset.hadamard)
+		elseif base == 2 then
+			qubit = gate.apply(qubit, preset.pauliy)
+		elseif base == 5 then
+			qubit = gate.apply(qubit, preset.paulix)
+		end
+
+		result = qb.measure(qubit)
+		measured_bits[i] = result
+	end
+	return measured_bits
+end
+
+function six_states.compare_bases(bases_1: bits, bases_2: bits): bits
+	local matching_indices = {}
+	for i = 1, #bases_1 do
+		if bases_1[i] == bases_2[i] then
+			table.insert(matching_indices, i)
+		end
+	end
+	return matching_indices
+end
+
+function six_states.sift_key(bits: bits, matching_indices: bits): bits
+	local key = {}
+	for _, index in ipairs(matching_indices) do
+		table.insert(key, bits[index])
+	end
+	return key
+end
+
+function six_states.eavesdrop_detection(bits_1: bits, bits_2: bits, matching_indices: bits, sample_size: { sample: number?, tolerate: number? }?): boolean
+	local a = sample_size or { sample = 0.1, tolerate = 0.2 }
+	local samp = math.floor(#matching_indices * (a.sample or 0.1))
+	local errors = 0
+
+	for i = 1, samp do
+		local index = matching_indices[i]
+		if bits_1[index] ~= bits_2[index] then
+			errors += 1
+		end
+	end
+
+	return errors / samp < (a.tolerate or 0.2)
+end
+
+crypto.six_states = six_states
 
 return crypto
