@@ -2,9 +2,9 @@
 --!optimize 2
 --!strict
 
-local gate = require("gate.lua")
-local qb = require("qb.lua")
-local preset = require("preset.lua")
+local gate = require("gate.luau")
+local qb = require("qb.luau")
+local preset = require("preset.luau")
 
 type complex = {r : number, i : number}
 type qubit = {complex}

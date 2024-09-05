@@ -8,9 +8,9 @@ type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 
-local cpx = require("cpx.lua")
-local gate = require("gate.lua")
-local mtx = require("mtx.lua")
+local cpx = require("cpx.luau")
+local gate = require("gate.luau")
+local mtx = require("mtx.luau")
 
 -- NOTE: THIS IS FOR SINGULAR QUBIT SYSTEMS
 -- MULTI-QUBIT FUNCTIONS WILL HAVE "m" AT THE START OF THE FUNCTION NAME
@@ -143,6 +143,21 @@ function qb.mmeasure(qubits: qubits): number
 	return #probs - 1
 end
 
+function qb.mmeasure_ex(qubits: qubits): {number}
+	local outcome = {}
+	for i, qubit in ipairs(qubits) do
+		local prob_0 = qubit[1].r^2 + qubit[1].i^2
+		--local prob_1 = qubit[2].r^2 + qubit[2].i^2
+		local rand = math.random()
+		if rand < prob_0 then
+			outcome[i] = 0
+		else
+			outcome[i] = 1
+		end
+	end
+	return outcome
+  end
+
 function qb.expectation(qubits : qubits, hamiltonian : matrix) : number
 	local num_qubits = #qubits
 	local state_sz = 2 ^ num_qubits
@@ -189,22 +204,38 @@ function qb.qft(qubits: qubits): qubits
 	return gate.apply_ex(qubits, g)
 end
 
+function qb.post_select(qubits: qubits, expected: {number}): qubits?
+	local outcome = qb.mmeasure_ex(qubits)
+	local matches = true
+	for i = 1, #expected do
+		if outcome[i] ~= expected[i] then
+			matches = false
+			break
+		end
+	end
+	if matches then
+		return qubits
+	else
+		return nil
+	end
+end
+
 --[[
 function qb.mmeasure(qubits: qubits): number
-    local probs = {}
-    local total_prob = 0
-    for i = 1, #qubits do
-        local prob = (qubits[i][1].r^2 + qubits[i][1].i^2)
-        probs[i] = total_prob + prob
-        total_prob += prob
-    end
-    local rand = math.random()
-    for i = 1, #probs do
-        if rand <= probs[i] then
-            return i - 1 -- state index
-        end
-    end
-    return -1
+	local probs = {}
+	local total_prob = 0
+	for i = 1, #qubits do
+		local prob = (qubits[i][1].r^2 + qubits[i][1].i^2)
+		probs[i] = total_prob + prob
+		total_prob += prob
+	end
+	local rand = math.random()
+	for i = 1, #probs do
+		if rand <= probs[i] then
+				return i - 1 -- state index
+		end
+	end
+	return -1
 end]]
 
 

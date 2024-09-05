@@ -6,8 +6,8 @@ type qubit = {complex}
 type qubits = {qubit}
 export type gate = {{complex}}
 
-local cpx = require("cpx.lua")
-local mtx = require("mtx.lua")
+local cpx = require("cpx.luau")
+local mtx = require("mtx.luau")
 
 local gate = {}
 

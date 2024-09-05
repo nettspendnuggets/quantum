@@ -8,8 +8,8 @@ type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 
-local gate = require("gate.lua")
-local qb = require("qb.lua")
+local gate = require("gate.luau")
+local qb = require("qb.luau")
 
 local wave = {}
 

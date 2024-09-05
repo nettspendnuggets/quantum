@@ -2,8 +2,8 @@
 --!optimize 2
 --!strict
 
-local cpx = require("cpx.lua")
-local gate = require("gate.lua")
+local cpx = require("cpx.luau")
+local gate = require("gate.luau")
 
 return {
 	identity = gate.new(

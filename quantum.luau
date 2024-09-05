@@ -3,7 +3,7 @@
 --!strict
 
 --[[-----------------------------------------------------------]]--
---++ quantum simulation written in luau                        ++--
+--++ quantum simulation written in luauu                        ++--
 --++ credits:                                                  ++--
 --++    - axtrct                                               ++--
 --++    - jiface                                               ++--
@@ -18,11 +18,11 @@ export type gate = {{complex}}
 export type matrix = {{complex}}
 export type matrix_sz = {r : number, c : number}
 return {
-	mtx = require("mtx.lua");
-	cpx = require("cpx.lua");
-	qb = require("qb.lua");
-	gate = require("gate.lua");
-	preset = require("preset.lua");
-	wave = require("wave.lua");
-	algo = require("algo.lua")
+	mtx = require("mtx.luau");
+	cpx = require("cpx.luau");
+	qb = require("qb.luau");
+	gate = require("gate.luau");
+	preset = require("preset.luau");
+	wave = require("wave.luau");
+	algo = require("algo.luau")
 }
