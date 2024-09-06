@@ -232,4 +232,16 @@ function gate.mixer_hamiltonian(qs: qubits, beta: number): qubits
 	return qs
 end
 
+function gate.dagger(g: gate): gate
+	local n = #g
+	local dagger = {}
+	for i = 1, n do
+		dagger[i] = {}
+		for j = 1, n do
+			dagger[i][j] = cpx.conj(g[j][i])
+		end
+	end
+	return dagger
+end
+
 return gate

@@ -204,69 +204,186 @@ crypto.e91 = e91
 
 local b92 = {}
 
-function b92.prepare_bit(bit: number): qubit
-	return gate.apply(qb.new(cpx.new(1, 0), cpx.new(0, 0)), if bit == 0 then preset.hadamard else preset.paulix)
+function b92.generatebits(n: number): bits
+	local bitstring = table.create(n)
+	for i = 1, n do
+		bitstring[i] = math.random(0, 1)
+	end
+	return bitstring
 end
 
-function b92.send_bit(bit: number): qubit
-	return b92.prepare_bit(bit)
+function b92.preparequbit(bit: number): qubit
+	local qubit = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+	if bit == 0 then
+		qubit = gate.apply(qubit, preset.hadamard)
+	else
+		qubit = gate.apply(qubit, preset.paulix)
+	end
+	return qubit
 end
 
-function b92.measure(qubit: qubit): number
-	local measure_result = qb.measure(qubit)
-	return measure_result == 0 and 0 or 1
+function b92.preparequbits(bits: bits): qubits
+	local prepared = table.create(#bits)
+	for i, bit in ipairs(bits) do
+		prepared[i] = b92.preparequbit(bit)
+	end
+	return prepared
+end
+
+function b92.measurequbit(qubit: qubit): number
+	local basis = math.random(0, 1)
+	if basis == 0 then
+		return qb.measure(qubit)
+	else
+		qubit = gate.apply(qubit, preset.hadamard)
+		return qb.measure(qubit)
+	end
+end
+
+function b92.measurequbits(qubits: qubits): bits
+	local results = table.create(#qubits)
+	for i, qubit in ipairs(qubits) do
+		results[i] = b92.measurequbit(qubit)
+	end
+	return results
+end
+
+function b92.siftkey(sendbits: bits, receivebits: bits): bits
+	local key = {}
+	for i = 1, #sendbits do
+		if sendbits[i] == 0 and receivebits[i] == 1 then
+			table.insert(key, 0)
+		elseif sendbits[i] == 1 and receivebits[i] == 0 then
+			table.insert(key, 1)
+		end
+	end
+	return key
+end
+
+function b92.errorestimation(alicekey: bits, bobkey: bits, samplesize: number?): number
+	local errors = 0
+	local samples = math.min(samplesize or math.floor(#alicekey * 0.1), #alicekey)
+	
+	for i = 1, samples do
+		if alicekey[i] ~= bobkey[i] then
+			errors += 1
+		end
+	end
+	
+	return errors / samples
+end
+
+function b92.privacyamplification(key: bits, finallength: number?): bits
+	local actuallength = finallength or math.floor(#key * 0.75)
+	local newkey = table.create(actuallength)
+	
+	for i = 1, actuallength do
+		local xorsum = 0
+		for j = 1, #key do
+			xorsum = bit32.bxor(xorsum, key[j] * ((j * 1103515245 + 12345) % 32768))
+		end
+		newkey[i] = bit32.band(xorsum, 1)
+	end
+	
+	return newkey
 end
 
 crypto.b92 = b92
 
-local six_states = {}
+local sixstates = {}
 
 local BASIS_Z = "Z"
 local BASIS_X = "X"
 local BASIS_Y = "Y"
 
-function six_states.prepare_bit(bit: number, basis: "X" | "Y" | "Z"): qubit
-	local qubit = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+function sixstates.generatebits(n: number): bits
+	local bits = table.create(n)
+	for i = 1, n do
+		bits[i] = math.random(0, 1)
+	end
+	return bits
+end
 
-	if basis == BASIS_Z then
+function sixstates.generatebases(n: number): {string}
+	local bases = table.create(n)
+	for i = 1, n do
+		bases[i] = ({BASIS_Z, BASIS_X, BASIS_Y})[math.random(1, 3)]
+	end
+	return bases
+end
+
+function sixstates.preparequbits(bits: bits, bases: {string}): qubits
+	local qubits = table.create(#bits)
+	for i, bit in ipairs(bits) do
+		local qubit = qb.new(cpx.new(1, 0), cpx.new(0, 0))
 		if bit == 1 then
 			qubit = gate.apply(qubit, preset.paulix)
 		end
-	elseif basis == BASIS_X then
-		qubit = gate.apply(qubit, preset.hadamard)
-		if bit == 1 then
-			qubit = gate.apply(qubit, preset.pauliz)
+		if bases[i] == BASIS_X then
+			qubit = gate.apply(qubit, preset.hadamard)
+		elseif bases[i] == BASIS_Y then
+			qubit = gate.apply(qubit, preset.hadamard)
+			qubit = gate.apply(qubit, preset.phase)
 		end
-	elseif basis == BASIS_Y then
-		qubit = gate.apply(qubit, preset.hadamard)
-		qubit = gate.apply(qubit, preset.pauliy)
-		if bit == 1 then
-			qubit = gate.apply(qubit, preset.pauliz)
+		qubits[i] = qubit
+	end
+	return qubits
+end
+
+function sixstates.measurequbits(qubits: qubits, bases: {string}): bits
+	local results = table.create(#qubits)
+	for i, qubit in ipairs(qubits) do
+		local basis = bases[i]
+		if basis == BASIS_X then
+			qubit = gate.apply(qubit, preset.hadamard)
+		elseif basis == BASIS_Y then
+			qubit = gate.apply(qubit, gate.dagger(preset.phase))
+			qubit = gate.apply(qubit, preset.hadamard)
+		end
+		results[i] = qb.measure(qubit)
+	end
+	return results
+end
+
+function sixstates.siftkey(bits: bits, basesa: {string}, basesb: {string}): bits
+	local key = {}
+	for i = 1, #bits do
+		if basesa[i] == basesb[i] then
+			table.insert(key, bits[i])
 		end
 	end
-
-	return qubit
+	return key
 end
 
-function six_states.send_bit(bit: number, basis: "X" | "Y" | "Z"): qubit
-	return six_states.prepare_bit(bit, basis)
-end
-
-function six_states.measure(qubit: qubit, basis: "X" | "Y" | "Z"): number
-	if basis == BASIS_Z then
-		return qb.measure(qubit)
-	elseif basis == BASIS_X then
-		qubit = gate.apply(qubit, preset.hadamard)
-		return qb.measure(qubit)
-	elseif basis == BASIS_Y then
-		qubit = gate.apply(qubit, preset.pauliy)
-		qubit = gate.apply(qubit, preset.hadamard)
-		return qb.measure(qubit)
+function sixstates.errorestimation(alicekey: bits, bobkey: bits, samplesize: number?): number
+	local errors = 0
+	local samples = math.min(samplesize or math.floor(#alicekey * 0.1), #alicekey)
+	
+	for i = 1, samples do
+		if alicekey[i] ~= bobkey[i] then
+			errors += 1
+		end
 	end
-	error("no.")
+	
+	return errors / samples
 end
 
-crypto.six_states = six_states
+function sixstates.privacyamplification(key: bits, finallength: number?): bits
+	local actuallength = finallength or math.floor(#key * 0.75)
+	local newkey = table.create(actuallength)
+	
+	for i = 1, actuallength do
+		local xorsum = 0
+		for j = 1, #key do
+			xorsum = bit32.bxor(xorsum, key[j] * ((j * 1103515245 + 12345) % 32768))
+		end
+		newkey[i] = bit32.band(xorsum, 1)
+	end
+	
+	return newkey
+end
+
+crypto.sixstates = sixstates
 
 local diqkd = {}
 
