@@ -2,7 +2,7 @@
 --!optimize 2
 --!strict
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
@@ -17,11 +17,11 @@ local mtx = require("mtx")
 
 local qb = {}
 
-function qb.new(alpha : complex, beta : complex)
+function qb.new(alpha: complex, beta: complex)
 	return {alpha, beta}
 end
 
-function qb.new_ex(n : number) : qubits
+function qb.new_ex(n: number): qubits
 	local size = 2 ^ n
 	local qubits = {}
 	for i = 1, size do
@@ -32,11 +32,11 @@ end
 
 -- rudimentary but works
 
-function qb.measure(qubit : qubit)
+function qb.measure(qubit: qubit)
 	return if math.random() <= (qubit[1].r ^ 2 + qubit[1].i ^ 2) then 0 else 1
 end
 
-function qb.run(qi : number, gates : {gate}?)
+function qb.run(qi: number, gates: {gate}?)
 	local qubits = {}
 
 	for i = 1, qi do
@@ -62,12 +62,12 @@ function qb.run(qi : number, gates : {gate}?)
 		table.insert(qubits, co)
 	end
 
-	for _, co : thread in ipairs(qubits) do
+	for _, co: thread in ipairs(qubits) do
 		coroutine.resume(co)
 	end
 end
 
-function qb.mnew(n: number) : qubits
+function qb.mnew(n: number): qubits
 	local qubit = qb.new(cpx.new(1, 0), cpx.new(0, 0)) -- |0⟩ state
 	local qubit2 = qb.new(cpx.new(1, 0), cpx.new(0, 0))
 	-- this is the kronecker product of the two qubits
@@ -80,11 +80,11 @@ function qb.mnew(n: number) : qubits
 end
 
 -- WIP
-function qb.mapply(qubits : qubits, g : gate) : qubits
+function qb.mapply(qubits: qubits, g: gate): qubits
 	return gate.apply_ex(qubits, g)
 end
 
-function qb.mrun(qi : number, gates : {gate}?)
+function qb.mrun(qi: number, gates: {gate}?)
 	local qubits = qb.new_ex(qi)
 	local co_qubits = {}
 
@@ -158,7 +158,7 @@ function qb.mmeasure_ex(qubits: qubits): {number}
 	return outcome
 end
 
-function qb.expectation(qubits : qubits, hamiltonian : matrix) : number
+function qb.expectation(qubits: qubits, hamiltonian: matrix): number
 	local num_qubits = #qubits
 	local state_sz = 2 ^ num_qubits
 	
@@ -256,28 +256,28 @@ end]]
 
 --[[
 
-function qb.hadamard(qubits : qubits) : qubits
+function qb.hadamard(qubits: qubits): qubits
 	return gate.apply_ex(qubits, gate.hadamard(qubits))
 end
 
-function qb.qft(qubits : qubits) : qubits
+function qb.qft(qubits: qubits): qubits
 	return gate.apply_ex(qubits, gate.qft(qubits))
 end
 
-function qb.inverse_qft(qubits : qubits) : qubits
+function qb.inverse_qft(qubits: qubits): qubits
 	local inverse_qft_gate = mtx.conj(gate.qft(qubits)) -- mtx.conj does complex conjugate transpose
 	return gate.apply_ex(qubits, inverse_qft_gate)
 end
 
-function qb.controlled_phase(control : number, target : number, angle : number, n : number) : gate
+function qb.controlled_phase(control: number, target: number, angle: number, n: number): gate
 	local g = mtx.identity(2^n)
 	local phase = cpx.exp(cpx.new(0, angle))
 	g[2^n][2^n] = phase
 	return g
 end
 
-function qb.controlled_modular_exponentiation(a : number, N : number, n : number) : gate
-	local function mod_exp(base : number, exp : number, mod : number) : number
+function qb.controlled_modular_exponentiation(a: number, N: number, n: number): gate
+	local function mod_exp(base: number, exp: number, mod: number): number
 		local result = 1
 		base = base % mod
 		while exp > 0 do

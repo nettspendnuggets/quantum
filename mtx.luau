@@ -2,15 +2,15 @@
 --!optimize 2
 --!strict
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type matrix = {{complex}}
-type matrix_sz = {r : number, c : number}
+type matrix_sz = {r: number, c: number}
 
 local cpx = require("cpx")
 
 local mtx = {}
 
-function mtx.new(size : matrix_sz, ... : complex)
+function mtx.new(size: matrix_sz, ...: complex)
 	local elements = {...}
 	if #elements ~= size.r * size.c then
 		error("number of elements doesnt match matrix size")
@@ -25,7 +25,7 @@ function mtx.new(size : matrix_sz, ... : complex)
 	return matrix
 end
 
-function mtx.create_empty(size : matrix_sz)
+function mtx.create_empty(size: matrix_sz)
 	local matrix = {}
 	for i = 1, size.r do
 		matrix[i] = {}
@@ -36,7 +36,7 @@ function mtx.create_empty(size : matrix_sz)
 	return matrix
 end
 
-function mtx.kronecker(a : matrix, b : matrix)
+function mtx.kronecker(a: matrix, b: matrix)
 	local ra = #a
 	local ca = #a[1]
 	local rb = #b
@@ -61,7 +61,7 @@ function mtx.kronecker(a : matrix, b : matrix)
 	return r
 end
 
-function mtx.add(m1 : matrix, m2 : matrix) : matrix
+function mtx.add(m1: matrix, m2: matrix): matrix
 	local size1, size2 = #m1, #m2
 	local cols1, cols2 = #m1[1], #m2[1]
 	if size1 ~= size2 or cols1 ~= cols2 then
@@ -77,7 +77,7 @@ function mtx.add(m1 : matrix, m2 : matrix) : matrix
 	return result
 end
 
-function mtx.sub(m1 : matrix, m2 : matrix) : matrix
+function mtx.sub(m1: matrix, m2: matrix): matrix
 	local size1, size2 = #m1, #m2
 	local cols1, cols2 = #m1[1], #m2[1]
 	if size1 ~= size2 or cols1 ~= cols2 then
@@ -93,7 +93,7 @@ function mtx.sub(m1 : matrix, m2 : matrix) : matrix
 	return result
 end
 
-function mtx.mul(m1 : matrix, m2 : matrix) : matrix
+function mtx.mul(m1: matrix, m2: matrix): matrix
 	local rows1, cols1 = #m1, #m1[1]
 	local rows2, cols2 = #m2, #m2[1]
 	if cols1 ~= rows2 then
@@ -112,7 +112,7 @@ function mtx.mul(m1 : matrix, m2 : matrix) : matrix
 	return result
 end
 
-function mtx.scalar_mul(scalar : complex, m : matrix) : matrix
+function mtx.scalar_mul(scalar: complex, m: matrix): matrix
 	local rows, cols = #m, #m[1]
 	local result = {}
 	for i = 1, rows do
@@ -124,7 +124,7 @@ function mtx.scalar_mul(scalar : complex, m : matrix) : matrix
 	return result
 end
 
-function mtx.identity(size : number) : matrix
+function mtx.identity(size: number): matrix
 	local result = {}
 	for i = 1, size do
 		result[i] = {}
@@ -139,7 +139,7 @@ function mtx.identity(size : number) : matrix
 	return result
 end
 
-function mtx.conj(m : matrix)
+function mtx.conj(m: matrix)
 	local result = {}
 	for i = 1, #m do
 		result[i] = {}

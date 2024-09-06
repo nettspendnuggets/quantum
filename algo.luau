@@ -6,11 +6,11 @@ local gate = require("gate")
 local qb = require("qb")
 local preset = require("preset")
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type matrix = {{complex}}
-type matrix_sz = {r : number, c : number}
+type matrix_sz = {r: number, c: number}
 
 local algo = {}
 
@@ -115,7 +115,7 @@ function algo.vqe(hamiltonian: matrix, depth: number): number
 	return objective(params)
 end
 
-function algo.qaoa(qubits : qubits, p : number, gammas : {number}, betas : {number}) : qubits
+function algo.qaoa(qubits: qubits, p: number, gammas: {number}, betas: {number}): qubits
 	for k = 1, p do
 		qubits = gate.cost_hamiltonian(qubits, gammas[k])
 		qubits = gate.mixer_hamiltonian(qubits, betas[k])

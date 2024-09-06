@@ -108,9 +108,9 @@ function bb84.sift_key(bits: bits, matching_indices: bits): bits
 	return key
 end
 
-function bb84.eavesdrop_detection(bits_1: bits, bits_2: bits, matching_indices: bits, sample_size : {
-	sample : number?;
-	tolerate : number?;
+function bb84.eavesdrop_detection(bits_1: bits, bits_2: bits, matching_indices: bits, sample_size: {
+	sample: number?;
+	tolerate: number?;
 }?): boolean
 	local a = sample_size or {
 		sample = 0.1;
@@ -175,9 +175,9 @@ function e91.measure_qubit(qubit: qubit, basis: number): number
 	error("three basis only")
 end
 
-function e91.bell_test(results_1: {number}, results_2: {number}): boolean
+function e91.bell_test(results_1: {number}, results_2: {number}, threshold : number?): boolean
 	local count = #results_1
-	local violation_threshold = 0.75 * count -- adjust based on Bell inequality criteria
+	local violation_threshold = (threshold or 0.75) * count -- adjust based on bells inequality criteria
 	local violations = 0
 
 	for i = 1, count do
@@ -387,7 +387,7 @@ crypto.sixstates = sixstates
 
 local diqkd = {}
 
-local function apply_epr_pair() : (qubit, qubit)
+local function apply_epr_pair(): (qubit, qubit)
 	local qubit_a = qb.new(cpx.new(1, 0), cpx.new(0, 0))
 	local qubit_b = qb.new(cpx.new(1, 0), cpx.new(0, 0))
 	qubit_a = gate.apply(qubit_a, preset.hadamard)
@@ -396,7 +396,7 @@ local function apply_epr_pair() : (qubit, qubit)
 	return entangled_qubits[1], entangled_qubits[2]
 end
 
-function diqkd.share_entangled_qubits(n : number) : {{qubit}}
+function diqkd.share_entangled_qubits(n: number): {{qubit}}
 	local p = {}
 	for i = 1, n do
 		local qubit_a, qubit_b = apply_epr_pair()
@@ -405,7 +405,7 @@ function diqkd.share_entangled_qubits(n : number) : {{qubit}}
 	return p
 end
 
-function diqkd.measure_qubits(pairs: {{qubit}}, basis_1: {string}, basis_2: {string}) : {{number}}
+function diqkd.measure_qubits(pairs: {{qubit}}, basis_1: {string}, basis_2: {string}): {{number}}
 	local results = {}
 	for i, pair in ipairs(pairs) do
 		local qubit_a = pair[1]
@@ -422,14 +422,14 @@ function diqkd.measure_qubits(pairs: {{qubit}}, basis_1: {string}, basis_2: {str
 	return results
 end
 
-function diqkd.measure_in_basis(qubit: qubit, basis: string) : number
+function diqkd.measure_in_basis(qubit: qubit, basis: string): number
 	if basis == "X" then
 		qubit = gate.apply(qubit, preset.hadamard)
 	end
 	return qb.measure(qubit)
 end
 
-function diqkd.compare_results(results: {{number}}) : {boolean}
+function diqkd.compare_results(results: {{number}}): {boolean}
 	local dtc = {}
 	for _, result_pair in ipairs(results) do
 		local result_1 = result_pair[1]

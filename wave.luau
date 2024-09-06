@@ -2,7 +2,7 @@
 --!optimize 2
 --!strict
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
@@ -15,21 +15,21 @@ local wave = {}
 
 -- apply hadamard to qubits to create wave-like superposition
 
-function wave.apply_wave(qubits : qubits, wave : gate): qubits
+function wave.apply_wave(qubits: qubits, wave: gate): qubits
 	for i = 1, #qubits do
 		qubits = gate.apply_ex(qubits, wave)
 	end
 	return qubits
 end
 
-function wave.evolve(qubits : qubits, angle : number) : qubits
+function wave.evolve(qubits: qubits, angle: number): qubits
 	for i = 1, #qubits do
 		qubits = gate.apply_ex(qubits, gate.rx(angle))
 	end
 	return qubits
 end
 
-function wave.observe(qubits : qubits, iter : number)
+function wave.observe(qubits: qubits, iter: number)
 	for t = 1, iter do
 		print("observation at time step " .. t)
 		qubits = wave.evolve(qubits, math.pi / 10)
@@ -39,7 +39,7 @@ function wave.observe(qubits : qubits, iter : number)
 	end
 end
 
-function wave.run(qubits : qubits, iter : number)
+function wave.run(qubits: qubits, iter: number)
 	local co = coroutine.create(function() wave.observe(qubits, iter) end)
 	for _ = 1, iter do
 		coroutine.resume(co)

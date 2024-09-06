@@ -2,7 +2,7 @@
 --!optimize 2
 --!strict
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
@@ -14,14 +14,14 @@ local preset = require("preset")
 
 local tp = {}
 
-function tp.entangle() : qubits
+function tp.entangle(): qubits
 	local qubits = qb.new_ex(2)
 	qubits[1] = gate.apply(qubits[1], preset.hadamard)
 	qubits[2] = gate.apply(qubits[2], preset.cnot)
 	return qubits
 end
 
-function tp.bell_measurement(qubits: qubits) : (number, number)
+function tp.bell_measurement(qubits: qubits): (number, number)
 	qubits[1] = gate.apply(qubits[1], preset.hadamard)
 	qubits[2] = gate.apply(qubits[2], preset.cnot)
 
@@ -29,7 +29,7 @@ function tp.bell_measurement(qubits: qubits) : (number, number)
 	return result[1], result[2]
 end
 
-function tp.apply_corrections(qubits : qubits, bits : {number}) : qubits
+function tp.apply_corrections(qubits: qubits, bits: {number}): qubits
 	if bits[1] == 1 then
 		qubits[1] = gate.apply(qubits[1], preset.paulix)
 	end
@@ -39,7 +39,7 @@ function tp.apply_corrections(qubits : qubits, bits : {number}) : qubits
 	return qubits
 end
 
-function tp.teleport(qubit : qubit, entangled_qubits : qubits) : qubits
+function tp.teleport(qubit: qubit, entangled_qubits: qubits): qubits
 	return tp.apply_corrections(entangled_qubits, {tp.bell_measurement({qubit, entangled_qubits[1]})})
 end
 

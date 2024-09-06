@@ -284,10 +284,12 @@ function gate.fidelity(g1: gate, g2: gate): number
 	return math.abs(tr.r) / #g1
 end
 
-function gate.decompose(g)
+function gate.decompose(g): {
+	gate | number
+}
 	assert(#g == 2 and #g[1] == 2, "decompose only supports 2x2 gates for now")
 	
-	local function atan2(y, x)
+	local function atan2(y: number, x: number)
 		if x > 0 then
 			return math.atan(y / x)
 		elseif x < 0 and y >= 0 then
@@ -305,7 +307,7 @@ function gate.decompose(g)
 
 	local det = cpx.sub(cpx.mul(g[1][1], g[2][2]), cpx.mul(g[1][2], g[2][1]))
 	local phase = atan2(det.i, det.r) / 2
-	local u = mtx.new(2, 2)
+	local u = mtx.create_empty({r = 2, c = 2})
 	for i = 1, 2 do
 		for j = 1, 2 do
 			u[i][j] = cpx.mul(g[i][j], cpx.exp(cpx.new(0, -phase)))
@@ -342,7 +344,7 @@ function gate.swap(): gate
 	}
 end
 
-function gate.isunitary(g)
+function gate.isunitary(g: gate)
 	local dagger = gate.dagger(g)
 	local product = gate.apply_ex(g, dagger)
 	local identity = mtx.identity(#g)

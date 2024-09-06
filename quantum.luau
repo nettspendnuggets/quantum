@@ -11,12 +11,12 @@
 
 
 math.randomseed(os.time())
-export type complex = {r : number, i : number}
+export type complex = {r: number, i: number}
 export type qubit = {complex}
 export type qubits = {qubit}
 export type gate = {{complex}}
 export type matrix = {{complex}}
-export type matrix_sz = {r : number, c : number}
+export type matrix_sz = {r: number, c: number}
 return {
 	mtx = require("mtx");
 	cpx = require("cpx");

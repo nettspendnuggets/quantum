@@ -6,7 +6,7 @@
 	NOTE: these are extremely basic, try to reimplement them in some way that is more complex
 ]]
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
@@ -20,7 +20,7 @@ local preset = require("preset")
 
 local err = {}
 
-function err.shor(N : number): (number, number)
+function err.shor(N: number): (number, number)
 	local function mod_exp(base: number, exp: number, mod: number): number
 		local result = 1
 		base = base % mod
@@ -99,7 +99,7 @@ end
 
 local steane = {}
 
-function steane.new() : qubits
+function steane.new(): qubits
 	local qubits = {}
 	for i = 1, 7 do
 		qubits[i] = qb.new(cpx.new(1, 0), cpx.new(0, 0))
@@ -107,7 +107,7 @@ function steane.new() : qubits
 	return qubits
 end
 
-function steane.encode(qubit : qubit) : qubits
+function steane.encode(qubit: qubit): qubits
 	local encoded = steane.new()
 	
 	encoded[1] = gate.apply(qubit, preset.paulix)
@@ -121,7 +121,7 @@ function steane.encode(qubit : qubit) : qubits
 	return encoded
 end
 
-function steane.measure_synd(qubits : qubits) : matrix
+function steane.measure_synd(qubits: qubits): matrix
 	local synd = mtx.new({r = 3, c = 7})
 	local H = mtx.new({r = 3, c = 7},
 		cpx.new(1), cpx.new(1), cpx.new(1), cpx.new(1), cpx.new(), cpx.new(), cpx.new(),
@@ -140,7 +140,7 @@ function steane.measure_synd(qubits : qubits) : matrix
 	return synd
 end
 
-function steane.correct_errors(qubits : qubits, synd : matrix) : qubits
+function steane.correct_errors(qubits: qubits, synd: matrix): qubits
 	local ecr_mtx = mtx.identity(7)
 	for i = 1, 7 do
 		for j = 1, 3 do

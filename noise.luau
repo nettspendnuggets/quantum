@@ -2,39 +2,39 @@
 --!optimize 2
 --!strict
 
-type complex = {r : number, i : number}
+type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
 type noise_obj = {
-	__index : noise_obj;
-	new : ( probabilities : {
-		bitflip : number?;
-		phaseflip : number?;
-		depolarizing : number?;
+	__index: noise_obj;
+	new: ( probabilities: {
+		bitflip: number?;
+		phaseflip: number?;
+		depolarizing: number?;
 	}) -> noise_meta;
-	apply_bitflip : (self : noise_meta, qubits : qubits) -> qubits;
-	apply_phaseflip : (self : noise_meta, qubits : qubits) -> qubits;
-	apply_depolarizing : (self : noise_meta, qubits : qubits) -> qubits;
-	apply_all : (self : noise_meta, qubits : qubits) -> qubits;
+	apply_bitflip: (self: noise_meta, qubits: qubits) -> qubits;
+	apply_phaseflip: (self: noise_meta, qubits: qubits) -> qubits;
+	apply_depolarizing: (self: noise_meta, qubits: qubits) -> qubits;
+	apply_all: (self: noise_meta, qubits: qubits) -> qubits;
 }
 type noise_meta = typeof(setmetatable({} :: {
-	bitflip : number;
-	phaseflip : number;
-	depolarizing : number;
+	bitflip: number;
+	phaseflip: number;
+	depolarizing: number;
 }, {} :: noise_obj))
 
 local gate = require("gate")
 local preset = require("preset")
 
-local noise : noise_obj = {} :: noise_obj
+local noise: noise_obj = {} :: noise_obj
 noise.__index = noise
 
-function noise.new(probabilities : {
-	bitflip : number?;
-	phaseflip : number?;
-	depolarizing : number?;
+function noise.new(probabilities: {
+	bitflip: number?;
+	phaseflip: number?;
+	depolarizing: number?;
 })
 	local meta = {}
 	meta.bitflip = probabilities.bitflip or 0.02
