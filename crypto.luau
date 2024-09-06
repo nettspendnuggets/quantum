@@ -204,18 +204,128 @@ crypto.e91 = e91
 
 local b92 = {}
 
+function b92.prepare_bit(bit: number): qubit
+	return gate.apply(qb.new(cpx.new(1, 0), cpx.new(0, 0)), if bit == 0 then preset.hadamard else preset.paulix)
+end
 
+function b92.send_bit(bit: number): qubit
+	return b92.prepare_bit(bit)
+end
+
+function b92.measure(qubit: qubit): number
+	local measure_result = qb.measure(qubit)
+	return measure_result == 0 and 0 or 1
+end
 
 crypto.b92 = b92
 
 local six_states = {}
 
+local BASIS_Z = "Z"
+local BASIS_X = "X"
+local BASIS_Y = "Y"
+
+function six_states.prepare_bit(bit: number, basis: "X" | "Y" | "Z"): qubit
+	local qubit = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+
+	if basis == BASIS_Z then
+		if bit == 1 then
+			qubit = gate.apply(qubit, preset.paulix)
+		end
+	elseif basis == BASIS_X then
+		qubit = gate.apply(qubit, preset.hadamard)
+		if bit == 1 then
+			qubit = gate.apply(qubit, preset.pauliz)
+		end
+	elseif basis == BASIS_Y then
+		qubit = gate.apply(qubit, preset.hadamard)
+		qubit = gate.apply(qubit, preset.pauliy)
+		if bit == 1 then
+			qubit = gate.apply(qubit, preset.pauliz)
+		end
+	end
+
+	return qubit
+end
+
+function six_states.send_bit(bit: number, basis: "X" | "Y" | "Z"): qubit
+	return six_states.prepare_bit(bit, basis)
+end
+
+function six_states.measure(qubit: qubit, basis: "X" | "Y" | "Z"): number
+	if basis == BASIS_Z then
+		return qb.measure(qubit)
+	elseif basis == BASIS_X then
+		qubit = gate.apply(qubit, preset.hadamard)
+		return qb.measure(qubit)
+	elseif basis == BASIS_Y then
+		qubit = gate.apply(qubit, preset.pauliy)
+		qubit = gate.apply(qubit, preset.hadamard)
+		return qb.measure(qubit)
+	end
+	error("no.")
+end
 
 crypto.six_states = six_states
 
 local diqkd = {}
 
+local function apply_epr_pair() : (qubit, qubit)
+	local qubit_a = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+	local qubit_b = qb.new(cpx.new(1, 0), cpx.new(0, 0))
+	qubit_a = gate.apply(qubit_a, preset.hadamard)
 
+	local entangled_qubits = gate.apply_ex({qubit_a, qubit_b}, preset.cnot)
+	return entangled_qubits[1], entangled_qubits[2]
+end
+
+function diqkd.share_entangled_qubits(n : number) : {{qubit}}
+	local p = {}
+	for i = 1, n do
+		local qubit_a, qubit_b = apply_epr_pair()
+		table.insert(p, {qubit_a, qubit_b})
+	end
+	return p
+end
+
+function diqkd.measure_qubits(pairs: {{qubit}}, basis_1: {string}, basis_2: {string}) : {{number}}
+	local results = {}
+	for i, pair in ipairs(pairs) do
+		local qubit_a = pair[1]
+		local qubit_b = pair[2]
+		
+		local a_basis = basis_1[i]
+		local b_basis = basis_2[i]
+
+		local a_result = diqkd.measure_in_basis(qubit_a, a_basis)
+		local b_result = diqkd.measure_in_basis(qubit_b, b_basis)
+
+		table.insert(results, {a_result, b_result})
+	end
+	return results
+end
+
+function diqkd.measure_in_basis(qubit: qubit, basis: string) : number
+	if basis == "X" then
+		qubit = gate.apply(qubit, preset.hadamard)
+	end
+	return qb.measure(qubit)
+end
+
+function diqkd.compare_results(results: {{number}}) : {boolean}
+	local dtc = {}
+	for _, result_pair in ipairs(results) do
+		local result_1 = result_pair[1]
+		local result_2 = result_pair[2]
+		
+		if result_1 ~= result_2 then
+			table.insert(dtc, true)
+		else
+			table.insert(dtc, false)
+		end
+	end
+	return dtc
+end
 
 crypto.diqkd = diqkd
 
