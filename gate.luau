@@ -40,7 +40,7 @@ function gate.apply(qubit: qubit, g: gate): qubit
 	return {alpha, beta}
 end
 
-function gate.apply_ex(qubits: qubits, g: gate, scope : {number}?): qubits
+function gate.apply_ex(qubits: qubits, g: gate, scope: {number}?): qubits
 	local n = #g
 	local new_qubits = {}
 	for i = 1, n do
@@ -108,7 +108,7 @@ function gate.controlled_phase(angle: number): gate
 	)
 end
 
-function gate.rx(angle : number) : gate
+function gate.rx(angle: number): gate
 	local half_angle = angle / 2
 	local cos_half = math.cos(half_angle)
 	local sin_half = math.sin(half_angle)
@@ -118,7 +118,7 @@ function gate.rx(angle : number) : gate
 	)
 end
 
-function gate.ry(angle : number) : gate
+function gate.ry(angle: number): gate
 	local half_angle = angle / 2
 	local cos_half = math.cos(half_angle)
 	local sin_half = math.sin(half_angle)
@@ -128,7 +128,7 @@ function gate.ry(angle : number) : gate
 	)
 end
 
-function gate.rz(angle : number) : gate
+function gate.rz(angle: number): gate
 	local half_angle = angle / 2
 	return gate.new(
 		cpx.new(math.cos(half_angle), -math.sin(half_angle)), cpx.new(0, 0),
@@ -136,7 +136,7 @@ function gate.rz(angle : number) : gate
 	)
 end
 
-function gate.qft(n: number) : gate
+function gate.qft(n: number): gate
 	local sz = 2^n
 	local qft = mtx.new({r = sz, c = sz})
 
@@ -162,8 +162,9 @@ function gate.qft(n: number) : gate
 
 	return qft
 end
+
 --[[
-function gate.new_ex(n : number) : qubits
+function gate.new_ex(n: number): qubits
 	local size = 2 ^ n
 	local qubits = {}
 	for i = 1, size do
@@ -242,6 +243,120 @@ function gate.dagger(g: gate): gate
 		end
 	end
 	return dagger
+end
+
+function gate.tensorproduct(g1: gate, g2: gate): gate
+	local n1, n2 = #g1, #g2
+	local result = {}
+	for i = 1, n1 * n2 do
+		result[i] = {}
+		for j = 1, n1 * n2 do
+			local i1, i2 = math.ceil(i / n2), (i - 1) % n2 + 1
+			local j1, j2 = math.ceil(j / n2), (j - 1) % n2 + 1
+			result[i][j] = cpx.mul(g1[i1][j1], g2[i2][j2])
+		end
+	end
+	return result
+end
+
+function gate.controlledgate(g: gate): gate
+	local n = #g
+	local controlled = mtx.identity(2 * n)
+	for i = 1, n do
+		for j = 1, n do
+			controlled[n + i][n + j] = g[i][j]
+		end
+	end
+	return controlled
+end
+
+function gate.trace(g: gate): complex
+	local tr = cpx.new(0, 0)
+	for i = 1, #g do
+		tr = cpx.add(tr, g[i][i])
+	end
+	return tr
+end
+
+function gate.fidelity(g1: gate, g2: gate): number
+	local product = gate.apply_ex(g1, gate.dagger(g2))
+	local tr = gate.trace(product)
+	return math.abs(tr.r) / #g1
+end
+
+function gate.decompose(g)
+	assert(#g == 2 and #g[1] == 2, "decompose only supports 2x2 gates for now")
+	
+	local function atan2(y, x)
+		if x > 0 then
+			return math.atan(y / x)
+		elseif x < 0 and y >= 0 then
+			return math.atan(y / x) + math.pi
+		elseif x < 0 and y < 0 then
+			return math.atan(y / x) - math.pi
+		elseif x == 0 and y > 0 then
+			return math.pi / 2
+		elseif x == 0 and y < 0 then
+			return -math.pi / 2
+		else
+			return 0
+		end
+	end
+
+	local det = cpx.sub(cpx.mul(g[1][1], g[2][2]), cpx.mul(g[1][2], g[2][1]))
+	local phase = atan2(det.i, det.r) / 2
+	local u = mtx.new(2, 2)
+	for i = 1, 2 do
+		for j = 1, 2 do
+			u[i][j] = cpx.mul(g[i][j], cpx.exp(cpx.new(0, -phase)))
+		end
+	end
+
+	local theta = 2 * math.acos(math.min(1, math.max(-1, u[1][1].r)))
+	local phi = atan2(u[1][2].i, u[1][2].r)
+	local lambda = atan2(u[2][1].i, u[2][1].r)
+
+	return {
+		gate.rz(phi),
+		gate.ry(theta),
+		gate.rz(lambda),
+		phase
+	}
+end
+
+function gate.toffoli(): gate
+	local toffoli = mtx.identity(8)
+	toffoli[7][7] = cpx.new(0, 0)
+	toffoli[7][8] = cpx.new(1, 0)
+	toffoli[8][7] = cpx.new(1, 0)
+	toffoli[8][8] = cpx.new(0, 0)
+	return toffoli
+end
+
+function gate.swap(): gate
+	return {
+		{cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0)},
+		{cpx.new(0, 0), cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0)},
+		{cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0)},
+		{cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(1, 0)}
+	}
+end
+
+function gate.isunitary(g)
+	local dagger = gate.dagger(g)
+	local product = gate.apply_ex(g, dagger)
+	local identity = mtx.identity(#g)
+	local epsilon = 1e-10
+
+	for i = 1, #g do
+		for j = 1, #g do
+			if math.abs(product[i][j].r - identity[i][j].r) > epsilon or
+			   math.abs(product[i][j].i - identity[i][j].i) > epsilon then
+				return false
+			end
+		end
+	end
+	return true
 end
 
 return gate
