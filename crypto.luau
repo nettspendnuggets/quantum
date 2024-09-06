@@ -446,4 +446,46 @@ end
 
 crypto.diqkd = diqkd
 
+--[[
+	TODO:
+		- decoy state protocol
+		- continuous var qkd
+		- measurement device independent qkd
+
+		- quantum signing
+		- qds using bell states
+		
+		- quantum threshold secret sharing
+		- shamir's secret sharing
+
+		- 1-2 quantum oblivious transfer
+		- quantum secure multiparty computation
+
+		- coin flipping
+		- bit commitment
+
+		- lattice-based cg
+		- code-based cg
+		- hash-based cg
+		- multivariate polynomial cg
+		- supersingular isogeny-based cg
+
+		- qmacs
+		- one-time pad
+
+		- recycling protocol
+
+		- zero-knewledge proof
+
+		- fhe
+		- homomorphic enc
+
+		MAYBE:
+		- crystals-kyber
+		- falcon & dilithium
+		- bike
+		- sphincs
+
+]]
+
 return crypto
