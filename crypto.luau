@@ -78,10 +78,8 @@ function bb84.measure_qubits(qubits: qubits, bases: bits): bits
 		local basis = bases[i]
 		local result
 		if basis == 0 then
-			-- rectilinear basis
 			result = qb.measure(qubit)
 		else
-			-- diagonal basis
 			qubit = gate.apply(qubit, preset.hadamard)
 			result = qb.measure(qubit)
 		end
