@@ -1,5 +1,6 @@
 +-OVERVIEW----------------------------------+
-| quantum simulation lib written in luau    |
+| quantum computing simulation lib written  |
+| in luau                                   |
 +-USAGE-------------------------------------+
 | quantum.luau is the main file, require    |
 | it.                                       |
