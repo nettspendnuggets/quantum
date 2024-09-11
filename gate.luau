@@ -4,6 +4,8 @@
 type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
+type matrix = {{complex}}
+
 export type gate = {{complex}}
 
 local cpx = require("cpx")
@@ -163,6 +165,36 @@ function gate.qft(n: number): gate
 	return qft
 end
 
+function gate.inverse_qft(n: number) : gate
+	local qft_inv = mtx.identity(2^n)
+
+	for i = n, 1, -1 do
+		for j = i + 1, n do
+			local angle = -2 * math.pi / (2^(j - i + 1))
+			local phase_gate = gate.controlled_phase(angle)
+			qft_inv = mtx.mul(qft_inv, phase_gate)
+		end
+
+		local expanded_hadamard = mtx.expand(gate.new(
+			cpx.new(1/math.sqrt(2), 0), cpx.new(1/math.sqrt(2), 0),
+			cpx.new(1/math.sqrt(2), 0), cpx.new(-1/math.sqrt(2), 0)
+		), {r = n, c = n})
+		qft_inv = mtx.mul(qft_inv, expanded_hadamard)
+	end
+
+	for i = 1, n // 2 do
+		local expanded_swap = mtx.expand(gate.new_ex(4,
+			cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0),
+			cpx.new(0, 0), cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0),
+			cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0),
+			cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(1, 0)
+		), {r = n, c = n})
+		qft_inv = mtx.mul(qft_inv, expanded_swap)
+	end
+
+	return qft_inv
+end
+
 --[[
 function gate.new_ex(n: number): qubits
 	local size = 2 ^ n
@@ -284,7 +316,7 @@ function gate.fidelity(g1: gate, g2: gate): number
 	return math.abs(tr.r) / #g1
 end
 
-function gate.decompose(g): {
+function gate.decompose(g : gate): {
 	gate | number
 }
 	assert(#g == 2 and #g[1] == 2, "decompose only supports 2x2 gates for now")
@@ -342,6 +374,19 @@ function gate.swap(): gate
 		{cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0)},
 		{cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(1, 0)}
 	}
+end
+
+function gate.controlled_unitary(unitary: gate, control: number, target: number, exponent: number) : gate
+	local controlled_unitary = mtx.exp(unitary, exponent)
+
+	local cu_gate = gate.new_ex(4,
+		cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0),
+		cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0),
+		cpx.new(0, 0), cpx.new(0, 0), controlled_unitary[1][1], controlled_unitary[1][2],
+		cpx.new(0, 0), cpx.new(0, 0), controlled_unitary[2][1], controlled_unitary[2][2]
+	)
+
+	return cu_gate
 end
 
 function gate.isunitary(g: gate)

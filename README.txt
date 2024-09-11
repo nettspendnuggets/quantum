@@ -21,4 +21,6 @@
 | made by: axtr       > @axtrct             |
 |          jiface     > @ssynical           |
 |          plusgiant5 > @plusgiant5         |
+|                                           |
+|    used: greg hewgill's picomath          |
 +-------------------------------------------+
