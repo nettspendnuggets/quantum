@@ -1,15 +1,23 @@
-+----------------------------------------+
-| quantum simulation lib written in luau |
-+----------------------------------------+
-| quantum.luau is the main file, require |
-| it.                                    |
-+----------------------------------------+
-| messy codebase, have fun figuring out  |
-| how to use it :3                       |
-| hope you're insane enough to refactor  |
-| it (NOT RECOMMENDED)                   |
-+----------------------------------------+
-| made by: axtr       > @axtrct          |
-|          jiface     > @ssynical        |
-|          plusgiant5 > @plusgiant5      |
-+----------------------------------------+
++-OVERVIEW----------------------------------+
+| quantum simulation lib written in luau    |
++-USAGE-------------------------------------+
+| quantum.luau is the main file, require    |
+| it.                                       |
++-STYLE-------------------------------------+
+| GENERAL:                                  |
+| - use tabs, spaces are janky to work with |
+| - thats it for now i guess lulz           |
+|                                           |
+| NAMING SCHEME:                            |
+| - add 'm' to the beginning of the         |
+| function name to signify that it supports |
+| multiple qubits                           |
+| - add "_ex" to the end of the function    |
+| name to signify that it is an "extra"     |
+| version of a preexisting function         |
+| - use snake case!                         |
++-CREDITS-----------------------------------+
+| made by: axtr       > @axtrct             |
+|          jiface     > @ssynical           |
+|          plusgiant5 > @plusgiant5         |
++-------------------------------------------+
