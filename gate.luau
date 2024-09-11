@@ -165,7 +165,7 @@ function gate.qft(n: number): gate
 	return qft
 end
 
-function gate.inverse_qft(n: number) : gate
+function gate.inverse_qft(n: number): gate
 	local qft_inv = mtx.identity(2^n)
 
 	for i = n, 1, -1 do
@@ -316,7 +316,7 @@ function gate.fidelity(g1: gate, g2: gate): number
 	return math.abs(tr.r) / #g1
 end
 
-function gate.decompose(g : gate): {
+function gate.decompose(g: gate): {
 	gate | number
 }
 	assert(#g == 2 and #g[1] == 2, "decompose only supports 2x2 gates for now")
@@ -376,7 +376,7 @@ function gate.swap(): gate
 	}
 end
 
-function gate.controlled_unitary(unitary: gate, control: number, target: number, exponent: number) : gate
+function gate.controlled_unitary(unitary: gate, control: number, target: number, exponent: number): gate
 	local controlled_unitary = mtx.exp(unitary, exponent)
 
 	local cu_gate = gate.new_ex(4,

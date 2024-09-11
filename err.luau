@@ -515,4 +515,80 @@ end
 
 err.repetition = repetition
 
+local toric = {}
+toric.__index = toric
+
+function toric.init(size: number?)
+	local meta = {}
+	meta.lattice = {}
+	meta.size = size or 5
+	setmetatable(meta, toric)
+
+	for i = 1, meta.size do
+		meta.lattice[i] = {}
+		for j = 1, meta.size do
+			meta.lattice[i][j] = qb.new(cpx.new(), cpx.new())
+		end
+	end
+
+	return meta
+end
+
+function toric:apply_x_error(x: number, y: number)
+	self.lattice[x][y] = gate.apply(self.lattice[x][y], preset.paulix)
+end
+
+function toric:apply_z_error(x: number, y: number)
+	self.lattice[x][y] = gate.apply(self.lattice[x][y], preset.pauliz)
+end
+
+function toric:star_stabilizer(x: number, y: number)
+	local qubits = {
+		qb.new(cpx.new(x), cpx.new(y));
+		qb.new(cpx.new((x - 1) % self.size + 1), cpx.new(y));
+		qb.new(cpx.new((x + 1) % self.size + 1), cpx.new(y));
+		qb.new(cpx.new(x), cpx.new((y - 1) % self.size + 1));
+		qb.new(cpx.new(x), cpx.new((y + 1) % self.size + 1));
+	}
+	for _, pos in ipairs(qubits) do
+		self.lattice[pos[1]][pos[2]] = gate.apply(self.lattice[pos[1]][pos[2]], preset.paulix)
+	end
+end
+
+function toric:plaquette_stabilizer(x: number, y: number)
+	local qubits = {
+		qb.new(cpx.new(x), cpx.new(y));
+		qb.new(cpx.new((x - 1) % self.size + 1), cpx.new(y));
+		qb.new(cpx.new((x + 1) % self.size + 1), cpx.new(y));
+		qb.new(cpx.new(x), cpx.new((y - 1) % self.size + 1));
+		qb.new(cpx.new(x), cpx.new((y + 1) % self.size + 1));
+	}
+	for _, pos in ipairs(qubits) do
+		self.lattice[pos[1]][pos[2]] = gate.apply(self.lattice[pos[1]][pos[2]], preset.pauliz)
+	end
+end
+
+function toric:measure_star_stabilizer(x: number, y: number)
+	return qb.measure(self.lattice[x][y]) == 1
+end
+
+function toric:measure_plaquette_stabilizer(x: number, y: number)
+	return qb.measure(self.lattice[x][y]) == 1
+end
+
+function toric:syndrome_extraction()
+	for i = 1, self.size do
+		for j = 1, self.size do
+			if self:measure_star_stabilizer(i, j) then
+				print("X-type error at:", i, j)
+			end
+			if self:measure_plaquette_stabilizer(i, j) then
+				print("Z-type error at:", i, j)
+			end
+		end
+	end
+end
+
+err.toric = toric
+
 return err

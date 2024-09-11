@@ -123,7 +123,7 @@ function algo.qaoa(qubits: qubits, p: number, gammas: {number}, betas: {number})
 	return qubits
 end
 
-function algo.qpe(qs: qubits, unitary: matrix, precision: number) : qubits
+function algo.qpe(qs: qubits, unitary: matrix, precision: number): qubits
 	for i = 1, precision do
 		qs = gate.apply_ex(qs, preset.hadamard)
 	end
@@ -133,7 +133,7 @@ function algo.qpe(qs: qubits, unitary: matrix, precision: number) : qubits
 		qs = gate.apply_ex(qs, gate.controlled_unitary(unitary, control_qubit, precision + 1, exponent))
 	end
 
-	qs = (function(qs: qubits, n: number) : qubits
+	qs = (function(qs: qubits, n: number): qubits
 		for i = n, 1, -1 do
 			for j = i + 1, n do
 				local angle = -2 * math.pi / (2^(j - i + 1))

@@ -168,7 +168,7 @@ function mtx.expand(m: matrix, new_sz: matrix_sz): matrix
 	return result
 end
 
-function mtx.exp(matrix: matrix, exponent: number) : matrix
+function mtx.exp(matrix: matrix, exponent: number): matrix
 	local size = #matrix
 	local result = mtx.identity(size)
 
