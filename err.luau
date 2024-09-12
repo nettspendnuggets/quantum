@@ -121,7 +121,7 @@ function steane.encode(qubit: qubit): qubits
 	return encoded
 end
 
-function steane.measure_synd(qubits: qubits): matrix
+function steane.measure_syndrome(qubits: qubits): matrix
 	local synd = mtx.new({r = 3, c = 7})
 	local H = mtx.new({r = 3, c = 7},
 		cpx.new(1), cpx.new(1), cpx.new(1), cpx.new(1), cpx.new(), cpx.new(), cpx.new(),
@@ -580,10 +580,10 @@ function toric:syndrome_extraction()
 	for i = 1, self.size do
 		for j = 1, self.size do
 			if self:measure_star_stabilizer(i, j) then
-				print("X-type error at:", i, j)
+				print("x-type error at:", i, j)
 			end
 			if self:measure_plaquette_stabilizer(i, j) then
-				print("Z-type error at:", i, j)
+				print("z-type error at:", i, j)
 			end
 		end
 	end
