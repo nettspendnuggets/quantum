@@ -5,17 +5,17 @@
 type kitaev_obj = {
 	__index : kitaev_obj;
 	init_chain: (chain_size: number?, delta: number?, mu: number?, t: number?, time_step: number?) -> kitaev_meta;
-	apply_majorana: (self: kitaev_meta, i: number, mode: number) -> nil;
+	apply_majorana: (self: kitaev_meta, i: number, mode: number) -> ();
 	hamiltonian: (self: kitaev_meta) -> number;
-	detect_majorana: (self: kitaev_meta) -> nil;
-	evolve_chain: (self: kitaev_meta, steps: number) -> nil;
-	braid_majorana: (self: kitaev_meta, i: number, j: number, mode_i: number, mode_j: number) -> nil;
+	detect_majorana: (self: kitaev_meta) -> ();
+	evolve_chain: (self: kitaev_meta, steps: number) -> ();
+	braid_majorana: (self: kitaev_meta, i: number, j: number, mode_i: number, mode_j: number) -> ();
 	error_detect: (self: kitaev_meta) -> number;
-	error_correct: (self: kitaev_meta) -> nil;
-	measure_majorana: (self: kitaev_meta, i: number, mode: number) -> nil;
-	full_simulation: (self: kitaev_meta, steps: number) -> nil;
-	perform_braiding_sequence: (self: kitaev_meta, sequence: {{number}}) -> nil;
-	time_evolution: (self: kitaev_meta, steps: number, dt: number) -> nil;
+	error_correct: (self: kitaev_meta) -> ();
+	measure_majorana: (self: kitaev_meta, i: number, mode: number) -> ();
+	full_simulation: (self: kitaev_meta, steps: number) -> ();
+	perform_braiding_sequence: (self: kitaev_meta, sequence: {{number}}) -> ();
+	time_evolution: (self: kitaev_meta, steps: number, dt: number) -> ();
 }
 
 type kitaev_meta = typeof(setmetatable({} :: {
@@ -60,7 +60,6 @@ function kitaev:apply_majorana(i: number, mode: number)
 	else
 		self.lattice[i].majorana2 = (self.lattice[i].majorana2 + 1) % 2
 	end
-	return
 end
 
 function kitaev:hamiltonian(): number
@@ -89,13 +88,12 @@ function kitaev:detect_majorana()
 	if right_majorana == 1 then
 		print("unpaired majorana mode detected at the right end of the chain")
 	end
-	return
 end
 
 function kitaev:evolve_chain(steps)
 	for step = 1, steps do
 		local energy = self:hamiltonian()
-		print("Energy at step " .. step .. ": " .. energy)
+		print("energy at step " .. step .. ": " .. energy)
 		self:detect_majorana()
 
 		for i = 1, self.chain_size - 1 do
@@ -103,7 +101,6 @@ function kitaev:evolve_chain(steps)
 			self.lattice[i].majorana2 = (self.lattice[i].majorana2 + self.time_step * self.t) % 2
 		end
 	end
-	return
 end
 
 function kitaev:braid_majorana(i: number, j: number, mode_i: number, mode_j: number)
@@ -118,7 +115,6 @@ function kitaev:braid_majorana(i: number, j: number, mode_i: number, mode_j: num
 		self.lattice[i].majorana2 = self.lattice[j].majorana2
 		self.lattice[j].majorana2 = temp
 	end
-	return
 end
 
 function kitaev:error_detect()
@@ -137,7 +133,6 @@ function kitaev:error_correct()
 		self.lattice[i].majorana1 = 0
 		self.lattice[i].majorana2 = 0
 	end
-	return
 end
 
 function kitaev:measure_majorana(i: number, mode: number)
@@ -162,7 +157,6 @@ function kitaev:full_simulation(steps: number)
 			self:braid_majorana(1, self.chain_size, 1, 2)
 		end
 	end
-	return
 end
 
 function kitaev:perform_braiding_sequence(sequence: {{number}})
@@ -170,7 +164,6 @@ function kitaev:perform_braiding_sequence(sequence: {{number}})
 		local i, j, mode_i, mode_j = table.unpack(pair)
 		self:braid_majorana(i, j, mode_i, mode_j)
 	end
-	return
 end
 
 function kitaev:time_evolution(steps: number, dt: number)
@@ -184,7 +177,6 @@ function kitaev:time_evolution(steps: number, dt: number)
 			self.lattice[i].majorana2 = (self.lattice[i].majorana2 + dt * self.t) % 2
 		end
 	end
-	return
 end
 
 return kitaev
