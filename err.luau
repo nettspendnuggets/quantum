@@ -426,8 +426,7 @@ end
 function binomial.measure_syndrome(encoded: qubits): number
 	local total = 0
 	for i = 1, #encoded do
-	-- todo: fix
-	--	total = total + qb.measure(encoded[i])[1] * (i - 1)
+	total = total + qb.measure(encoded[i]) * (i - 1)
 	end
 	return total
 end
