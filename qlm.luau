@@ -315,7 +315,7 @@ function vqc.train(data: {{number}}, labels: {number}, epochs: number, learning_
 
 			adam_update(params, gradients, learning_rate, beta1, beta2, epsilon, m, v, epoch)
 		end
-		print("Epoch " .. epoch .. " Loss: " .. total_loss / #data)
+		print("epoch " .. epoch .. " loss: " .. total_loss / #data)
 	end
 
 	return params
