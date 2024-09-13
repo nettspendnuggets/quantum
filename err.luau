@@ -2,10 +2,6 @@
 --!optimize 2
 --!strict
 
---[[
-	NOTE: these are extremely basic, try to reimplement them in some way that is more complex
-]]
-
 type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
