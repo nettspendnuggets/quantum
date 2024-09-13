@@ -179,4 +179,10 @@ print("prediction: ", prediction)
 
 qlm.qsvm = qsvm
 
+local qnn = {}
+
+-- Pluh giant 5 please make
+
+qlm.qnn = qnn
+
 return qlm
