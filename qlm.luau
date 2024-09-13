@@ -1,3 +1,7 @@
+--!native
+--!optimize 2
+--!strict
+
 type complex = {r: number, i: number}
 type qubit = {complex}
 type qubits = {qubit}
@@ -10,14 +14,14 @@ local qlm = {}
 
 local qsvm = {}
 
-local function get_kernel(kernel_t: kernel_t, gamma: number?)
+local function get_kernel(kernel_t: kernel_t, gamma: number?): (qubits_1: qubits, qubits_2: qubits) -> complex
 	return if kernel_t then
 		if kernel_t == "polynomial" then
 			qsvm.polynomial_kernel
 		elseif kernel_t == "gaussian" then
 			function(qubits_1: qubits, qubits_2: qubits)
 				assert(gamma, "gamma was not provided")
-				qsvm.gaussian_kernel(qubits_1, qubits_2, gamma)
+				return qsvm.gaussian_kernel(qubits_1, qubits_2, gamma)
 			end
 		elseif kernel_t == "quantum" then
 			qsvm.quantum_kernel

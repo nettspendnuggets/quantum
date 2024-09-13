@@ -60,6 +60,10 @@ function cpx.log(c: complex): complex
 	return cpx.new(math.log(math.sqrt(c.r * c.r + c.i * c.i)), math.atan2(c.i, c.r))
 end
 
+function cpx.tostring(c: complex): string
+	return c.r .. (if c.i > 0 then "+" else "") .. c.i
+end
+
 -- https://hewgill.com/picomath/lua/gamma.lua.html
 
 function cpx.gamma(c: complex): complex
