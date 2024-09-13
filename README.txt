@@ -24,9 +24,10 @@
 |                + SUFFIX +                 | FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR   |
 | - _ex: extra/expanded version of function | OTHER DEALINGS IN THE SOFTWARE.                                 |
 +-CREDITS-----------------------------------+-----------------------------------------------------------------+
-| made by: axtr       > @axtrct             |
-|          jiface     > @ssynical           |
-|          plusgiant5 > @plusgiant5         |
-|                                           |
-|    used: greg hewgill's picomath          |                                                                 
+| made by: axtr       > @axtrct              used: - greg hewgill's picomath                         d8888b.  |
+|          jiface     > @ssynical                                                                 db VP  `8D  |
+|          plusgiant5 > @plusgiant5                                                               VP   oooY'  |
+|                                                                                                      ~~~b.  |
+|                                                                                                 db db   8D  |
+| hi guys please contribute to this please i'm too lazy we're too lazy so please                  VP Y8888P'  |
 +-------------------------------------------+-----------------------------------------------------------------+
