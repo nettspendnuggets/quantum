@@ -8,6 +8,11 @@
 | GENERAL:                                  |
 | - use tabs, spaces are janky to work with |
 | - thats it for now i guess lulz           |
+| - when you want to make a sub-table in a  |
+| parent table, do this:                    |
+| local parent = {}                         |
+| local child = {}                          |
+| parent.child = child                      |
 |                                           |
 | NAMING SCHEME:                            |
 | - add 'm' to the beginning of the         |
