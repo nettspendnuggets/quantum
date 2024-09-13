@@ -17,13 +17,13 @@ local tp = {}
 function tp.entangle(): qubits
 	local qubits = qb.new_ex(2)
 	qubits[1] = gate.apply(qubits[1], preset.hadamard)
-	qubits[2] = gate.apply(qubits[2], preset.cnot)
+	qubits = gate.apply_ex(qubits, preset.cnot)
 	return qubits
 end
 
 function tp.bell_measurement(qubits: qubits): (number, number)
 	qubits[1] = gate.apply(qubits[1], preset.hadamard)
-	qubits[2] = gate.apply(qubits[2], preset.cnot)
+	qubits = gate.apply_ex(qubits, preset.cnot)
 
 	local result = qb.mmeasure_ex({qubits[1], qubits[2]})
 	return result[1], result[2]
