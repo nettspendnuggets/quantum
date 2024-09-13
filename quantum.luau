@@ -2,14 +2,6 @@
 --!optimize 2
 --!strict
 
---[[-----------------------------------------------------------]]--
---++ quantum simulation written in luauu                       ++--
---++ credits:                                                  ++--
---++    - axtrct                                               ++--
---++    - jiface                                               ++--
---[[-----------------------------------------------------------]]--
-
-
 math.randomseed(os.time())
 export type complex = {r: number, i: number}
 export type qubit = {complex}
