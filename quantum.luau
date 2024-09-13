@@ -30,4 +30,8 @@ return {
 	tp = require("tp");
 	circuitvis = require("circuitvis");
 	ent = require("ent");
+	crypto = require("crypto");
+	kitaev = require("kitaev");
+	anneal = require("anneal");
+	qlm = require("qlm");
 }
