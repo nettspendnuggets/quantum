@@ -9,6 +9,7 @@ type kernel_t = ("polynomial" | "gaussian" | "quantum")?
 
 local qb = require("qb")
 local cpx = require("cpx")
+local gate = require("gate")
 
 local qlm = {}
 
@@ -178,6 +179,149 @@ print("prediction: ", prediction)
 ]]
 
 qlm.qsvm = qsvm
+
+local vqc = {}
+
+function vqc.encode(data_point: {number}, encoding_type: "angle" | "amplitude"): qubits
+	local n = #data_point
+	local qubits = {}
+	if encoding_type == "angle" then
+		for i = 1, n do
+			local angle = data_point[i] * math.pi
+			qubits[i] = {cpx.new(math.cos(angle / 2), 0), cpx.new(math.sin(angle / 2), 0)}
+		end
+	elseif encoding_type == "amplitude" then
+		local norm = 0
+		for i = 1, n do
+			norm = norm + data_point[i] ^ 2
+		end
+		norm = math.sqrt(norm)
+		for i = 1, n do
+			qubits[i] = {cpx.new(data_point[i] / norm, 0), cpx.new(0, 0)}
+		end
+	end
+	return qubits
+end
+
+function vqc.ansatz(params: {number}, qubits: qubits, layers: number): qubits
+	local n = #qubits
+	for l = 1, layers do
+		for i = 1, n do
+			local theta = params[i] * math.pi * l / layers
+			qubits[i] = gate.apply(qubits[i], gate.rx(theta))
+			qubits[i] = gate.apply(qubits[i], gate.rz(theta))
+			if i < n then
+				qubits[i] = gate.apply(qubits[i], gate.cnot(i, i + 1))
+			end
+		end
+	end
+	return qubits
+end
+
+function vqc.measure(qubits: qubits): {number}
+	local result = {}
+	for i, qubit in ipairs(qubits) do
+		local prob_0 = cpx.abs(cpx.mul(cpx.conj(qubit[1]), qubit[1]))
+		--local prob_1 = 1 - prob_0
+		if math.random() < prob_0 then
+			result[i] = 0
+		else
+			result[i] = 1
+		end
+	end
+	return result
+end
+
+function vqc.loss(prediction: number, label: number, params: {number}, regularization_type: "L1" | "L2", lambda: number): number
+	local loss = 0
+	if label == 1 then
+		loss = -math.log(prediction)
+	else
+		loss = -math.log(1 - prediction)
+	end
+
+	if regularization_type == "L1" then
+		for _, param in ipairs(params) do
+			loss = loss + lambda * math.abs(param)
+		end
+	elseif regularization_type == "L2" then
+		for _, param in ipairs(params) do
+			loss = loss + lambda * param^2
+		end
+	end
+	return loss
+end
+
+function vqc.gradient(params: {number}, data: {number}, label: number, layers: number, epsilon: number): {number}
+	local gradients = {}
+	for i, param in ipairs(params) do
+		local params_plus = {table.unpack(params)}
+		local params_minus = {table.unpack(params)}
+		params_plus[i] = param + epsilon
+		params_minus[i] = param - epsilon
+
+		local qubits_plus = vqc.encode(data, "angle")
+		qubits_plus = vqc.ansatz(params_plus, qubits_plus, layers)
+		local prediction_plus = vqc.measure(qubits_plus)[1]
+
+		local qubits_minus = vqc.encode(data, "angle")
+		qubits_minus = vqc.ansatz(params_minus, qubits_minus, layers)
+		local prediction_minus = vqc.measure(qubits_minus)[1]
+
+		local loss_plus = vqc.loss(prediction_plus, label, params, "L2", 0)
+		local loss_minus = vqc.loss(prediction_minus, label, params, "L1", 0)
+
+		gradients[i] = (loss_plus - loss_minus) / (2 * epsilon)
+	end
+	return gradients
+end
+
+-- evil optimizer
+local function adam_update(params: {number}, gradients: {number}, learning_rate: number, beta1: number, beta2: number, epsilon: number, m: {number}, v: {number}, t: number)
+	for i, param in ipairs(params) do
+		m[i] = beta1 * m[i] + (1 - beta1) * gradients[i]
+		v[i] = beta2 * v[i] + (1 - beta2) * gradients[i]^2
+
+		local m_hat = m[i] / (1 - beta1^t)
+		local v_hat = v[i] / (1 - beta2^t)
+
+		params[i] = params[i] - learning_rate * m_hat / (math.sqrt(v_hat) + epsilon)
+	end
+end
+
+function vqc.train(data: {{number}}, labels: {number}, epochs: number, learning_rate: number, layers: number): {number}
+	local params = {}
+	local m = {}
+	local v = {}
+	local n = #data[1]
+	local epsilon = 1e-8
+	local beta1, beta2 = 0.9, 0.999
+
+	for i = 1, n do
+		params[i] = math.random()
+		m[i] = 0
+		v[i] = 0
+	end
+
+	for epoch = 1, epochs do
+		local total_loss = 0
+		for i, data_point in ipairs(data) do
+			local qubits = vqc.encode(data_point, "angle")
+			qubits = vqc.ansatz(params, qubits, layers)
+			local prediction = vqc.measure(qubits)[1]
+			local gradients = vqc.gradient(params, data_point, labels[i], layers, epsilon)
+			local loss = vqc.loss(prediction, labels[i], params, "L2", 0.001)
+			total_loss = total_loss + loss
+
+			adam_update(params, gradients, learning_rate, beta1, beta2, epsilon, m, v, epoch)
+		end
+		print("Epoch " .. epoch .. " Loss: " .. total_loss / #data)
+	end
+
+	return params
+end
+
+qlm.vqc = vqc
 
 local qnn = {}
 

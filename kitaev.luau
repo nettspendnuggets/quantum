@@ -16,8 +16,8 @@ type kitaev_obj = {
 	full_simulation: (self: kitaev_meta, steps: number) -> nil;
 	perform_braiding_sequence: (self: kitaev_meta, sequence: {{number}}) -> nil;
 	time_evolution: (self: kitaev_meta, steps: number, dt: number) -> nil;
-
 }
+
 type kitaev_meta = typeof(setmetatable({} :: {
 	lattice: {};
 	chain_size: number;
