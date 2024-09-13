@@ -7,7 +7,6 @@
 +-STYLE-------------------------------------+
 | GENERAL:                                  |
 | - use tabs, spaces are janky to work with |
-| - thats it for now i guess lulz           |
 | - when you want to make a sub-table in a  |
 | parent table, do this:                    |
 | local parent = {}                         |
@@ -15,13 +14,15 @@
 | parent.child = child                      |
 |                                           |
 | NAMING SCHEME:                            |
-| - add 'm' to the beginning of the         |
-| function name to signify that it supports |
-| multiple qubits                           |
-| - add "_ex" to the end of the function    |
-| name to signify that it is an "extra"     |
-| version of a preexisting function         |
-| - use snake case!                         |
+|               + GENERALS +                |
+| - use snake case                          |
+|                                           |
+|                + PREFIX +                 |
+| - m: supports multiple qubits             |
+| - t: supports topological based           |
+|                                           |
+|                + SUFFIX +                 |
+| - _ex: extra/expanded version of function |
 +-CREDITS-----------------------------------+
 | made by: axtr       > @axtrct             |
 |          jiface     > @ssynical           |
