@@ -147,7 +147,4 @@ function algo.qpe(qs: qubits, unitary: matrix, precision: number): qubits
 	return qs
 end
 
-
-
-
 return algo
