@@ -32,13 +32,14 @@ local function hamiltoniantomatrix(h: hamiltonian): matrix
 	return m
 end
 
-local function randompair()
-	return math.random(), math.random()
-end
+-- Unused functions 🥰
+-- local function randompair()
+-- 	return math.random(), math.random()
+-- end
 
-local function sigmoid(x) -- Sigmoid.
-	return 1 / (1 + math.exp(-x))
-end
+-- local function sigmoid(x) -- Sigmoid.
+-- 	return 1 / (1 + math.exp(-x))
+-- end
 
 function anneal.quantumanneal(hamiltonian: hamiltonian, initialstate: {number}, temperature: number, steps: number, coolingrate: number): ({number}, number)
 	local currentstate = initialstate
