@@ -17,23 +17,38 @@ local mtx = require("mtx")
 
 local qb = {}
 
-function qb.new(alpha: complex, beta: complex)
-	return {alpha, beta}
+function qb.new(alpha: complex, beta: complex): qubit
+    return {alpha, beta}
 end
 
 function qb.new_ex(n: number): qubits
-	local size = 2 ^ n
-	local qubits = {}
-	for i = 1, size do
-		qubits[i] = qb.new(cpx.new(if i == 1 then 1 else 0, 0), cpx.new(0, 0))
-	end
-	return qubits
+    local size = 2 ^ n
+    local qubits: qubits = {}
+    for i = 1, size do
+        qubits[i] = qb.new(cpx.new(if i == 1 then 1 else 0, 0), cpx.new(0, 0))
+    end
+    return qubits
+end
+
+function qb.tensorproduct(qubits: qubits): {complex}
+    local result: matrix = {{cpx.new(1, 0)}}
+    for _, qubit in ipairs(qubits) do
+        result = mtx.kronecker(result, {{qubit[1]}, {qubit[2]}})
+    end
+    -- Flatten the result
+    local flattened: {complex} = {}
+    for i = 1, #result do
+        for j = 1, #result[1] do
+            table.insert(flattened, result[i][j])
+        end
+    end
+    return flattened
 end
 
 -- rudimentary but works
 
-function qb.measure(qubit: qubit)
-	return if math.random() <= (qubit[1].r ^ 2 + qubit[1].i ^ 2) then 0 else 1
+function qb.measure(qubit: qubit): number
+    return if math.random() <= (qubit[1].r ^ 2 + qubit[1].i ^ 2) then 0 else 1
 end
 
 function qb.run(qi: number, gates: {gate}?)

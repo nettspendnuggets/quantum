@@ -36,29 +36,29 @@ function mtx.create_empty(size: matrix_sz)
 	return matrix
 end
 
-function mtx.kronecker(a: matrix, b: matrix)
-	local ra = #a
-	local ca = #a[1]
-	local rb = #b
-	local cb = #b[1]
-	local r = {}
-	for i = 1, ra do
-		for j = 1, ca do
-			local ai = (i - 1) * rb
-			local aj = (j - 1) * cb
-			for m = 1, rb do
-				for n = 1, cb do
-					local new_value = {
-						r = a[i][j].r * b[m][n].r - a[i][j].i * b[m][n].i,
-						i = a[i][j].r * b[m][n].i + a[i][j].i * b[m][n].r
-					}
-					r[ai + m] = r[ai + m] or {}
-					r[ai + m][aj + n] = new_value
-				end
-			end
-		end
-	end
-	return r
+function mtx.kronecker(a: matrix, b: matrix): matrix
+    local ra, ca = #a, #a[1]
+    local rb, cb = #b, #b[1]
+    local result: matrix = {}
+    
+    for i = 1, ra * rb do
+        result[i] = {}
+        for j = 1, ca * cb do
+            result[i][j] = cpx.new(0, 0)
+        end
+    end
+    
+    for i = 1, ra do
+        for j = 1, ca do
+            for m = 1, rb do
+                for n = 1, cb do
+                    result[(i-1)*rb + m][(j-1)*cb + n] = cpx.mul(a[i][j], b[m][n])
+                end
+            end
+        end
+    end
+    
+    return result
 end
 
 function mtx.add(m1: matrix, m2: matrix): matrix
@@ -110,6 +110,17 @@ function mtx.mul(m1: matrix, m2: matrix): matrix
 		end
 	end
 	return result
+end
+
+function mtx.mul_mv(matrix: matrix, vector: {complex}): {complex}
+    local result = {}
+    for i = 1, #matrix do
+        result[i] = cpx.new(0, 0)
+        for j = 1, #vector do
+            result[i] = cpx.add(result[i], cpx.mul(matrix[i][j], vector[j]))
+        end
+    end
+    return result
 end
 
 function mtx.scalar_mul(scalar: complex, m: matrix): matrix

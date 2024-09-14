@@ -7,7 +7,7 @@ type complex = {r: number, i: number}
 local cpx = {}
 
 function cpx.new(real: number?, imaginary: number?): complex
-	return {r = real or 0, i = imaginary or 0}
+    return {r = real or 0, i = imaginary or 0}
 end
 
 function cpx.add(c1: complex, c2: complex)
@@ -27,8 +27,8 @@ function cpx.div(c1: complex, c2: complex)
 	return cpx.new((c1.r * c2.r + c1.i * c2.i) / d, (c1.i * c2.r - c1.r * c2.i) / d)
 end
 
-function cpx.abs(c: complex)
-	return math.sqrt(c.r * c.r + c.i * c.i)
+function cpx.abs(c: complex): number
+    return math.sqrt(c.r * c.r + c.i * c.i)
 end
 
 function cpx.conj(c: complex)
@@ -55,6 +55,7 @@ function cpx.sqrt(c: complex) -- sqrt
 	if c.i < 0 then y = -y end
 	return cpx.new(x, y)
 end
+
 
 function cpx.log(c: complex): complex
 	return cpx.new(math.log(math.sqrt(c.r * c.r + c.i * c.i)), math.atan2(c.i, c.r))
