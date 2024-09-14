@@ -26,4 +26,5 @@ return {
 	kitaev = require("kitaev");
 	anneal = require("anneal");
 	qlm = require("qlm");
+	decay = require("decay");
 }
