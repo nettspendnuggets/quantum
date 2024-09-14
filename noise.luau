@@ -7,7 +7,7 @@ type qubit = {complex}
 type qubits = {qubit}
 type gate = {{complex}}
 type matrix = {{complex}}
-type noise_obj = {
+export type noise_obj = {
 	__index: noise_obj;
 	new: ( probabilities: {
 		bitflip: number?;
@@ -19,7 +19,7 @@ type noise_obj = {
 	apply_depolarizing: (self: noise_meta, qubits: qubits) -> qubits;
 	apply_all: (self: noise_meta, qubits: qubits) -> qubits;
 }
-type noise_meta = typeof(setmetatable({} :: {
+export type noise_meta = typeof(setmetatable({} :: {
 	bitflip: number;
 	phaseflip: number;
 	depolarizing: number;
