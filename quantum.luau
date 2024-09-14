@@ -27,4 +27,6 @@ return {
 	anneal = require("anneal");
 	qlm = require("qlm");
 	decay = require("decay");
+	compiler = require("compiler");
+	anyon = require("anyon");
 }
