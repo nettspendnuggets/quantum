@@ -625,24 +625,21 @@ crypto.mdiqkd = mdiqkd
 
 local qds = {}
 
-type quantum_signature = {qubit}
+type qds_qt_sig = {qubit}
 type message = string
 
-local function generate_qubit(): qubit
-	local r1, i1 = math.random() * 2 - 1, math.random() * 2 - 1
-	local r2, i2 = math.random() * 2 - 1, math.random() * 2 - 1
-	return {cpx.new(r1, i1), cpx.new(r2, i2)}
-end
-
-function qds.setup(num_qubits: number): quantum_signature
-	local signature: quantum_signature = {}
+function qds.setup(num_qubits: number): qds_qt_sig
+	local signature: qds_qt_sig = {}
 	for _ = 1, num_qubits do
-		table.insert(signature, generate_qubit())
+		table.insert(signature, qb.new(
+			cpx.new(math.random() * 2 - 1, math.random() * 2 - 1),
+			cpx.new(math.random() * 2 - 1, math.random() * 2 - 1))
+		)
 	end
 	return signature
 end
 
-function qds.sign(message: message, signature: quantum_signature): {any}
+function qds.sign(message: message, signature: qds_qt_sig): {any}
 	local measurement_basis = {}
 	local signed_message = message .. "_signed"
 
@@ -654,7 +651,7 @@ function qds.sign(message: message, signature: quantum_signature): {any}
 	return {signed_message, measurement_basis}
 end
 -- {message | {number}}
-function qds.verify(received_signature: {any}, original_signature: quantum_signature, vrf_threshold: number?): boolean
+function qds.verify(received_signature: {any}, original_signature: qds_qt_sig, vrf_threshold: number?): boolean
 	local signed_message, measurement_basis = received_signature[1], received_signature[2]
 	local verification_threshold = vrf_threshold or 0.95
 	local match_count = 0
@@ -681,7 +678,7 @@ end
 
 local adversary = {}
 
-function adversary.intercept_and_tamper(message: string, measurement_basis: {number}): {any}
+function adversary.intercept_and_measure(message: string, measurement_basis: {number}): {any}
 	local tampered_message = message .. "_tampered"
 	local tampered_basis = {}
 
@@ -697,6 +694,61 @@ end
 qds.adversary = adversary
 
 crypto.qds = qds
+
+local qdsbs = {}
+
+export type bell_pair = qubits
+export type qdsbs_qt_sig = {bell_pair}
+
+function qdsbs.setup(num_pairs: number): qdsbs_qt_sig
+	local signature: qdsbs_qt_sig = {}
+	for _ = 1, num_pairs do
+		table.insert(signature, {
+			qb.new(cpx.new(1 / math.sqrt(2), 0), cpx.new(0, 0));
+			qb.new(cpx.new(0, 0), cpx.new(1 / math.sqrt(2), 0))
+		})
+	end
+	return signature
+end
+
+function qdsbs.sign(message: message, signature: qdsbs_qt_sig): {any}
+	local measurement_basis = {}
+	local signed_message = message .. "_signed"
+
+	for _, bell_pair in ipairs(signature) do
+		local measure_result = math.random(0, 1)
+		table.insert(measurement_basis, measure_result)
+	end
+
+	return {signed_message, measurement_basis}
+end
+
+function qdsbs.verify(received_signature: {any}, original_signature: qdsbs_qt_sig, vrf_threshold: number?): boolean
+	local signed_message, measurement_basis = received_signature[1], received_signature[2]
+	local verification_threshold = vrf_threshold or 0.95
+	local match_count = 0
+
+	for i, bell_pair in ipairs(original_signature) do
+		local expected_measurement = measurement_basis[i]
+		local actual_measurement = math.random(0, 1)
+		if expected_measurement == actual_measurement then
+			match_count += 1
+		end
+	end
+
+	local match_ratio = match_count / #original_signature
+	local verification_pass = match_ratio >= verification_threshold
+
+	if verification_pass then
+		print("bell state signature verified successfully for message:", signed_message, "; match ratio:", match_ratio)
+	else
+		print("bell state signature verification failed for message:", signed_message, "; match ratio:", match_ratio)
+	end
+
+	return verification_pass
+end
+
+qdsbs.adversary = adversary
 
 --[[
 	TODO:
