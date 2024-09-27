@@ -757,7 +757,7 @@ qdsbs.adversary = adversary
 		DONE - measurement device independent qkd
 
 		DONE - quantum signing
-		- qds using bell states
+		DONE - qds using bell states
 		
 		- quantum threshold secret sharing
 		- shamir's secret sharing
