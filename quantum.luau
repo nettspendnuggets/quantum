@@ -25,7 +25,7 @@ return {
 	crypto = require("crypto");
 	kitaev = require("kitaev");
 	anneal = require("anneal");
-	qlm = require("qlm");
+	qml = require("qml");
 	decay = require("decay");
 	compiler = require("compiler");
 	anyon = require("anyon");

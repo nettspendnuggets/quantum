@@ -11,7 +11,7 @@ local qb = require("qb")
 local cpx = require("cpx")
 local gate = require("gate")
 
-local qlm = {}
+local qml = {}
 
 local qsvm = {}
 
@@ -178,7 +178,7 @@ print("prediction: ", prediction)
 
 ]]
 
-qlm.qsvm = qsvm
+qml.qsvm = qsvm
 
 local vqc = {}
 
@@ -321,12 +321,12 @@ function vqc.train(data: {{number}}, labels: {number}, epochs: number, learning_
 	return params
 end
 
-qlm.vqc = vqc
+qml.vqc = vqc
 
 local qnn = {}
 
 -- Pluh giant 5 please make
 
-qlm.qnn = qnn
+qml.qnn = qnn
 
-return qlm
+return qml
