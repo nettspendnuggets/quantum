@@ -150,7 +150,7 @@ function mtx.identity(size: number): matrix
 	return result
 end
 
-function mtx.conj(m: matrix)
+function mtx.conj(m: matrix): matrix
 	local result = {}
 	for i = 1, #m do
 		result[i] = {}
@@ -183,11 +183,61 @@ function mtx.exp(matrix: matrix, exponent: number): matrix
 	local size = #matrix
 	local result = mtx.identity(size)
 
-	for i = 1, exponent do
+	for _ = 1, exponent do
 		result = mtx.mul(result, matrix)
 	end
 
 	return result
+end
+
+-- new funcs
+
+function mtx.is_unitary(m: matrix): boolean
+    local rows, cols = #m, #m[1]
+    if rows ~= cols then
+        return false
+    end
+
+    local m_conj_transpose = mtx.conj(mtx.transpose(m))
+    local product = mtx.mul(m, m_conj_transpose)
+    local identity = mtx.identity(rows)
+
+    local epsilon = 1e-10
+    for i = 1, rows do
+        for j = 1, cols do
+            if math.abs(product[i][j].r - identity[i][j].r) > epsilon or
+               math.abs(product[i][j].i - identity[i][j].i) > epsilon then
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+function mtx.transpose(m: matrix): matrix
+    local rows, cols = #m, #m[1]
+    local result = {}
+
+    for j = 1, cols do
+        result[j] = {}
+        for i = 1, rows do
+            result[j][i] = m[i][j]
+        end
+    end
+
+    return result
+end
+
+function mtx.outer_product(v1: {complex}, v2: {complex}): matrix
+    local result = {}
+    for i = 1, #v1 do
+        result[i] = {}
+        for j = 1, #v2 do
+            result[i][j] = cpx.mul(v1[i], cpx.conj(v2[j]))
+        end
+    end
+    return result
 end
 
 return mtx
