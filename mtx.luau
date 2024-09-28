@@ -37,28 +37,28 @@ function mtx.create_empty(size: matrix_sz)
 end
 
 function mtx.kronecker(a: matrix, b: matrix): matrix
-    local ra, ca = #a, #a[1]
-    local rb, cb = #b, #b[1]
-    local result: matrix = {}
-    
-    for i = 1, ra * rb do
-        result[i] = {}
-        for j = 1, ca * cb do
-            result[i][j] = cpx.new(0, 0)
-        end
-    end
-    
-    for i = 1, ra do
-        for j = 1, ca do
-            for m = 1, rb do
-                for n = 1, cb do
-                    result[(i-1)*rb + m][(j-1)*cb + n] = cpx.mul(a[i][j], b[m][n])
-                end
-            end
-        end
-    end
-    
-    return result
+	local ra, ca = #a, #a[1]
+	local rb, cb = #b, #b[1]
+	local result: matrix = {}
+	
+	for i = 1, ra * rb do
+		result[i] = {}
+		for j = 1, ca * cb do
+			result[i][j] = cpx.new(0, 0)
+		end
+	end
+	
+	for i = 1, ra do
+		for j = 1, ca do
+			for m = 1, rb do
+				for n = 1, cb do
+					result[(i-1)*rb + m][(j-1)*cb + n] = cpx.mul(a[i][j], b[m][n])
+				end
+			end
+		end
+	end
+	
+	return result
 end
 
 function mtx.add(m1: matrix, m2: matrix): matrix
@@ -113,14 +113,14 @@ function mtx.mul(m1: matrix, m2: matrix): matrix
 end
 
 function mtx.mul_mv(matrix: matrix, vector: {complex}): {complex}
-    local result = {}
-    for i = 1, #matrix do
-        result[i] = cpx.new(0, 0)
-        for j = 1, #vector do
-            result[i] = cpx.add(result[i], cpx.mul(matrix[i][j], vector[j]))
-        end
-    end
-    return result
+	local result = {}
+	for i = 1, #matrix do
+		result[i] = cpx.new(0, 0)
+		for j = 1, #vector do
+			result[i] = cpx.add(result[i], cpx.mul(matrix[i][j], vector[j]))
+		end
+	end
+	return result
 end
 
 function mtx.scalar_mul(scalar: complex, m: matrix): matrix
@@ -193,51 +193,51 @@ end
 -- new funcs
 
 function mtx.is_unitary(m: matrix): boolean
-    local rows, cols = #m, #m[1]
-    if rows ~= cols then
-        return false
-    end
+	local rows, cols = #m, #m[1]
+	if rows ~= cols then
+		return false
+	end
 
-    local m_conj_transpose = mtx.conj(mtx.transpose(m))
-    local product = mtx.mul(m, m_conj_transpose)
-    local identity = mtx.identity(rows)
+	local m_conj_transpose = mtx.conj(mtx.transpose(m))
+	local product = mtx.mul(m, m_conj_transpose)
+	local identity = mtx.identity(rows)
 
-    local epsilon = 1e-10
-    for i = 1, rows do
-        for j = 1, cols do
-            if math.abs(product[i][j].r - identity[i][j].r) > epsilon or
-               math.abs(product[i][j].i - identity[i][j].i) > epsilon then
-                return false
-            end
-        end
-    end
+	local epsilon = 1e-10
+	for i = 1, rows do
+		for j = 1, cols do
+			if math.abs(product[i][j].r - identity[i][j].r) > epsilon or
+				math.abs(product[i][j].i - identity[i][j].i) > epsilon then
+				return false
+			end
+		end
+	end
 
-    return true
+	return true
 end
 
 function mtx.transpose(m: matrix): matrix
-    local rows, cols = #m, #m[1]
-    local result = {}
+	local rows, cols = #m, #m[1]
+	local result = {}
 
-    for j = 1, cols do
-        result[j] = {}
-        for i = 1, rows do
-            result[j][i] = m[i][j]
-        end
-    end
+	for j = 1, cols do
+		result[j] = {}
+		for i = 1, rows do
+			result[j][i] = m[i][j]
+		end
+	end
 
-    return result
+	return result
 end
 
 function mtx.outer_product(v1: {complex}, v2: {complex}): matrix
-    local result = {}
-    for i = 1, #v1 do
-        result[i] = {}
-        for j = 1, #v2 do
-            result[i][j] = cpx.mul(v1[i], cpx.conj(v2[j]))
-        end
-    end
-    return result
+	local result = {}
+	for i = 1, #v1 do
+		result[i] = {}
+		for j = 1, #v2 do
+			result[i][j] = cpx.mul(v1[i], cpx.conj(v2[j]))
+		end
+	end
+	return result
 end
 
 return mtx

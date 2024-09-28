@@ -213,25 +213,25 @@ function qmacs.execute_circuit(circuit: {gate})
 end
 
 local function qubits_to_complex_vector(state: qubits): {complex}
-    local vector = {}
-    for i = 1, #state do
-        table.insert(vector, cpx.new(state[i].alpha.r, state[i].alpha.i)) -- That's axtrcts problem, haha!
-    end
-    return vector
+	local vector = {}
+	for i = 1, #state do
+		table.insert(vector, cpx.new(state[i][1].r, state[i][1].i)) -- That's axtrcts problem, haha!
+	end
+	return vector
 end
 
 function qmacs.state_tomography(measurements: number): matrix
-    local n = qmacs.register.size
-    local density_matrix = mtx.create_empty({r = 2^n, c = 2^n})
-    
-    for _ = 1, measurements do
-        local state = qmacs.get_state()
-        local complex_vector = qubits_to_complex_vector(state)
-        local proj = mtx.outer_product(complex_vector, complex_vector)
-        density_matrix = mtx.add(density_matrix, proj)
-    end
-    
-    return mtx.scalar_mul(cpx.new(1/measurements, 0), density_matrix)
+	local n = qmacs.register.size
+	local density_matrix = mtx.create_empty({r = 2^n, c = 2^n})
+	
+	for _ = 1, measurements do
+		local state = qmacs.get_state()
+		local complex_vector = qubits_to_complex_vector(state)
+		local proj = mtx.outer_product(complex_vector, complex_vector)
+		density_matrix = mtx.add(density_matrix, proj)
+	end
+	
+	return mtx.scalar_mul(cpx.new(1/measurements, 0), density_matrix)
 end
 
 return qmacs
