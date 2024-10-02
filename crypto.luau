@@ -759,11 +759,11 @@ qdsbs.adversary = adversary
 		DONE - quantum signing
 		DONE - qds using bell states
 		
-		- quantum threshold secret sharing
-		- shamir's secret sharing
+		DONE Jiface - quantum threshold secret sharing
+		DONE Jiface - shamir's secret sharing
 
-		- 1-2 quantum oblivious transfer
-		- quantum secure multiparty computation
+		DONE Jiface - 1-2 quantum oblivious transfer
+		DONE Jiface - quantum secure multiparty computation
 
 		- coin flipping
 		- bit commitment
