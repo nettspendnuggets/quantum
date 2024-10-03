@@ -750,6 +750,41 @@ end
 
 qdsbs.adversary = adversary
 
+function crypto.coin_flip(): boolean
+	local coin = qb.new(cpx.new(1, 0), cpx.new(0, 0)) -- |0⟩ state
+	coin = gate.apply(coin, preset.hadamard)
+	local result = qb.measure(coin)
+	return result == 0
+end
+
+function crypto.commit_bit(bit: boolean): (qubits, qubits)
+	local commitment = qb.new_ex(2)
+	local key = qb.new_ex(2)
+	if bit then
+		commitment[1] = gate.apply(commitment[1], preset.paulix)
+	end
+	commitment[2] = gate.apply(commitment[2], preset.hadamard)
+	key[1] = gate.apply(key[1], preset.hadamard)
+	key[2] = gate.apply(key[2], preset.hadamard)
+	local entangled = gate.apply_ex(commitment, preset.cnot)
+	entangled = gate.apply_ex(entangled, preset.cnot, {1, 3}) -- Control: commitment[1], Target: key[1]
+	entangled = gate.apply_ex(entangled, preset.cnot, {2, 4}) -- Control: commitment[2], Target: key[2]
+	return {entangled[1], entangled[2]}, {entangled[3], entangled[4]}
+end
+
+-- b
+function crypto.verify_commitment(commitment: qubits, key: qubits): boolean
+	local disentangled = gate.apply_ex(commitment, preset.cnot, {1, 3}) -- Control: commitment[1], Target: key[1]
+	disentangled = gate.apply_ex(disentangled, preset.cnot, {2, 4}) -- Control: commitment[2], Target: key[2]
+	local measured_commitment = {qb.measure(disentangled[1]), qb.measure(disentangled[2])}
+	return measured_commitment[1] == measured_commitment[2]
+end
+
+function crypto.reveal_bit(key: qubits): boolean
+	local measured_key = {qb.measure(key[1]), qb.measure(key[2])}
+	return measured_key[1] ~= measured_key[2]
+end
+
 --[[
 	TODO:
 		DONE - decoy state protocol
@@ -759,14 +794,14 @@ qdsbs.adversary = adversary
 		DONE - quantum signing
 		DONE - qds using bell states
 		
-		DONE Jiface - quantum threshold secret sharing
-		DONE Jiface - shamir's secret sharing
+		DONE - quantum threshold secret sharing
+		DONE - shamir's secret sharing
 
-		DONE Jiface - 1-2 quantum oblivious transfer
-		DONE Jiface - quantum secure multiparty computation
+		DONE - 1-2 quantum oblivious transfer
+		DONE - quantum secure multiparty computation
 
-		- coin flipping
-		- bit commitment
+		DONE - coin flipping
+		DONE - bit commitment
 
 		- lattice-based cg
 		- code-based cg
