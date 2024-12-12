@@ -174,36 +174,42 @@ function qb.mmeasure_ex(qubits: qubits): {number}
 end
 
 function qb.expectation(qubits: qubits, hamiltonian: matrix): number
-	local num_qubits = #qubits
-	local state_sz = 2 ^ num_qubits
-	
-	local rho = mtx.new({r = state_sz, c = state_sz})
+    local num_qubits = #qubits
+    local state_sz = 2 ^ num_qubits
+    local rho = mtx.new({r = state_sz, c = state_sz})
+    for i = 1, state_sz do
+        for j = 1, state_sz do
+            rho[i][j] = cpx.new(0, 0)
+        end
+    end
+    local state_vector = qb.tensorproduct(qubits)
+    -- ρ = |ψ⟩⟨ψ| (outer product of state vector with its conjugate transpose)
+    for i = 1, state_sz do
+        for j = 1, state_sz do
+            -- conjugate transpose conj(state_vector[i]) * state_vector[j]
+            local elem = cpx.mul(
+                cpx.conj(state_vector[i]), 
+                state_vector[j]
+            )
+            rho[i][j] = elem
+        end
+    end
 
-	for i = 1, state_sz do
-		for j = 1, state_sz do
-			rho[i][j] = cpx.new(0, 0)
-		end
-	end
+    -- Tr(ρH) for expectation value
+    local expect = cpx.new(0, 0)
+    for i = 1, state_sz do
+        for j = 1, state_sz do
+            local rho_ij = rho[i][j]
+            local H_ij = hamiltonian[i][j]
+            if i == j then
+                local product = cpx.mul(rho_ij, H_ij)
+                expect = cpx.add(expect, product)
+            end
+        end
+    end
 
-	for i, qubit in ipairs(qubits) do
-		local _alpha = qubit[1]
-		local _beta = qubit[2]
-
-		-- placeholder
-		-- note: jiface do this thig
-	end
-
-	local expect = 0
-	for i = 1, state_sz do
-		for j = 1, state_sz do
-			local rho_ij = rho[i][j]
-			local H_ij = hamiltonian[i][j]
-			local product = cpx.mul(rho_ij, H_ij)
-			expect = expect + product.r
-		end
-	end
-
-	return expect
+    -- real
+    return expect.r
 end
 
 function qb.qft(qubits: qubits): qubits
@@ -244,6 +250,29 @@ function qb.entangle(n: number): {qubits}
 		table.insert(entangled_pairs, qubits)
 	end
 	return entangled_pairs
+end
+
+function qb.compute_density_matrix(qubits: qubits): matrix
+	local num_qubits = #qubits
+	local state_sz = 2 ^ num_qubits
+	
+	-- zero complex values
+	local rho: matrix = {}
+	for i = 1, state_sz do
+		rho[i] = {}
+		for j = 1, state_sz do
+			rho[i][j] = cpx.new(0, 0)
+		end
+	end
+	local state_vector = qb.tensorproduct(qubits)
+	for i = 1, state_sz do
+		for j = 1, state_sz do
+			local conj_i = cpx.conj(state_vector[i])
+			rho[i][j] = cpx.mul(state_vector[j], conj_i)
+		end
+	end
+
+	return rho
 end
 
 --[[
