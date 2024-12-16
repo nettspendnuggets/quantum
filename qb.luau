@@ -50,6 +50,13 @@ end
 function qb.measure(qubit: qubit): number
     return if math.random() <= (qubit[1].r ^ 2 + qubit[1].i ^ 2) then 0 else 1
 end
+--[[
+function qb.measure(qubit: qubit): number
+    local probs = qb.probability(qubit)
+    local rand = math.random()
+    return (rand < probs[1]) and 0 : 1
+end
+--]]
 
 function qb.run(qi: number, gates: {gate}?)
 	local qubits = {}
@@ -273,6 +280,54 @@ function qb.compute_density_matrix(qubits: qubits): matrix
 	end
 
 	return rho
+end
+
+function qb.from_state(alpha: complex, beta: complex): qubit
+    local magnitude_squared = cpx.add(
+        cpx.mul(cpx.conj(alpha), alpha), 
+        cpx.mul(cpx.conj(beta), beta)
+    )
+    
+    local norm = cpx.sqrt(magnitude_squared)
+    
+    return {
+        cpx.div(alpha, norm),  -- normalized |0⟩ component
+        cpx.div(beta, norm)    -- normalized |1⟩ component
+    }
+end
+
+function qb.to_state_string(qubit: qubit): string
+    local alpha, beta = qubit[1], qubit[2]
+    
+    local function format_complex(c: complex): string
+        local epsilon = 1e-10
+        
+        local r_str = (math.abs(c.r) < epsilon) and "0" or 
+                      string.format("%.10g", c.r)
+        
+        local i_str = (math.abs(c.i) < epsilon) and "0" or 
+                      string.format("%.10g", math.abs(c.i)) .. "i"
+        
+        if c.r == 0 and c.i == 0 then
+            return "0"
+        elseif c.r == 0 then
+            return (c.i > 0 and "" or "-") .. i_str
+        elseif c.i == 0 then
+            return r_str
+        else
+            local sign = c.i > 0 and "+" : "-"
+            return r_str .. sign .. i_str
+        end
+    end
+    
+    return format_complex(alpha) .. "|0⟩ + " .. format_complex(beta) .. "|1⟩"
+end
+
+function qb.probability(qubit: qubit): {number}
+    return {
+        cpx.mul(cpx.conj(qubit[1]), qubit[1]).r,  -- probability of |0⟩
+        cpx.mul(cpx.conj(qubit[2]), qubit[2]).r   -- probability of |1⟩
+    }
 end
 
 --[[
