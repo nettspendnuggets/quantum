@@ -35,10 +35,10 @@ function qb.tensorproduct(qubits: qubits): {complex}
     for _, qubit in ipairs(qubits) do
         result = mtx.kronecker(result, {{qubit[1]}, {qubit[2]}})
     end
-    -- Flatten the result
     local flattened: {complex} = {}
-    for i = 1, #result do
-        for j = 1, #result[1] do
+    local resultRows, resultCols = #result, #result[1]
+    for i = 1, resultRows do
+        for j = 1, resultCols do
             table.insert(flattened, result[i][j])
         end
     end
@@ -205,17 +205,12 @@ function qb.expectation(qubits: qubits, hamiltonian: matrix): number
     -- Tr(ρH) for expectation value
     local expect = cpx.new(0, 0)
     for i = 1, state_sz do
-        for j = 1, state_sz do
-            local rho_ij = rho[i][j]
-            local H_ij = hamiltonian[i][j]
-            if i == j then
-                local product = cpx.mul(rho_ij, H_ij)
-                expect = cpx.add(expect, product)
-            end
-        end
+        local rho_ii = rho[i][i]
+        local H_ii = hamiltonian[i][i]
+        local product = cpx.mul(rho_ii, H_ii)
+        expect = cpx.add(expect, product)
     end
-
-    -- real
+   --real
     return expect.r
 end
 
@@ -223,12 +218,12 @@ function qb.qft(qubits: qubits): qubits
 	local n = #qubits
 	local omega = cpx.exp(cpx.new(0, 2*math.pi/n))
 	local g = {}
-	for i = 1, n do
-		g[i] = {}
-		for j = 1, n do
-			g[i][j] = cpx.pow(omega, (i-1)*(j-1))
-		end
-	end
+    for i = 1, n do
+        g[i] = {}
+        for j = 1, n do
+            g[i][j] = cpx.pow(omega, (i-1)*(j-1))
+        end
+    end
 	return gate.apply_ex(qubits, g)
 end
 
@@ -236,11 +231,10 @@ function qb.post_select(qubits: qubits, expected: {number}): qubits?
 	local outcome = qb.mmeasure_ex(qubits)
 	local matches = true
 	for i = 1, #expected do
-		if outcome[i] ~= expected[i] then
-			matches = false
-			break
-		end
-	end
+        if outcome[i] ~= expected[i] then
+            return nil
+        end
+    end
 	if matches then
 		return qubits
 	else
@@ -265,12 +259,12 @@ function qb.compute_density_matrix(qubits: qubits): matrix
 	
 	-- zero complex values
 	local rho: matrix = {}
-	for i = 1, state_sz do
-		rho[i] = {}
-		for j = 1, state_sz do
-			rho[i][j] = cpx.new(0, 0)
-		end
-	end
+    for i = 1, state_sz do
+        rho[i] = {}
+        for j = 1, state_sz do
+            rho[i][j] = cpx.new(0, 0)
+        end
+    end
 	local state_vector = qb.tensorproduct(qubits)
 	for i = 1, state_sz do
 		for j = 1, state_sz do
