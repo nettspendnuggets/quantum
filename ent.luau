@@ -11,6 +11,7 @@ type matrix = {{complex}}
 local gate = require("gate")
 local qb = require("qb")
 local preset = require("preset")
+local cpx = require("cpx")
 
 local ent = {}
 
@@ -57,12 +58,34 @@ function ent.ghz(n: number): qubits
 	return qubits
 end
 
-function ent.w(n)
+function ent.w(n: number): qubits
     local qubits = qb.new_ex(n)
-    qubits[1] = gate.apply(qubits[1], preset.hadamard)
-    for i = 2, n do
-        qubits = gate.apply_ex(qubits, gate.cnot(1, i))
+    
+    -- Create superposition of states with exactly one qubit in state |1⟩
+    -- First, set the system to |10...0⟩ state (first qubit in state |1⟩)
+    qubits[1] = gate.apply(qubits[1], preset.paulix)
+    -- Now create an equal superposition of all single-excitation states
+    -- This requires creating superpositions and applying rotations
+    -- For n=2, we need a simple operation to get |01⟩ + |10⟩
+    if n == 2 then
+        -- Apply a special rotation gate to get (|01⟩ + |10⟩)/√2
+        local sqrt_half = 1 / math.sqrt(2)
+        local rotation_gate = {
+            {cpx.new(sqrt_half), cpx.new(sqrt_half)},
+            {cpx.new(sqrt_half), cpx.new(-sqrt_half)}
+        }
+        qubits = gate.apply_ex(qubits, rotation_gate)
+    else
+        -- For n>2, we need more complex operations to create the W state.
+		-- Made an entire gate for this, as for the n=2 case, it uses a simple rotation to create the Bell-like state (|01⟩ + |10⟩)/√2.
+	    for i = 2, n do
+            local cos_theta = math.sqrt((i-1)/i)
+            local sin_theta = math.sqrt(1/i)
+            local rotation_gate = gate.controlled_rotation(1, i, cos_theta, sin_theta)
+            qubits = gate.apply_ex(qubits, rotation_gate)
+        end
     end
+    
     return qubits
 end
 
@@ -73,7 +96,7 @@ end
 --- @return measured_qubits, measurement_probabilities
 --]]
 
-function ent.measure(qubits)
+function ent.measure(qubits: qubits)
     local measured_qubits = {}
     local measurement_probabilities = {}
     for i, qubit in ipairs(qubits) do
@@ -84,7 +107,7 @@ function ent.measure(qubits)
     return measured_qubits, measurement_probabilities
 end
 
-function ent.cluster(n)
+function ent.cluster(n: number): qubits
     local qubits = qb.new_ex(n)
     qubits[1] = gate.apply(qubits[1], preset.hadamard)
     for i = 2, n do
@@ -94,7 +117,7 @@ function ent.cluster(n)
     return qubits
 end
 
-function ent.partial_trace(qubits, traced_indices)
+function ent.partial_trace(qubits: qubits, traced_indices: {number})
     if not qubits or #qubits == 0 then
         error("No qubits provided for partial trace")
     end
@@ -129,7 +152,7 @@ function ent.partial_trace(qubits, traced_indices)
         for i = 1, reduced_dim do
             reduced_density_matrix[i] = {}
             for j = 1, reduced_dim do
-                reduced_density_matrix[i][j] = 0
+                reduced_density_matrix[i][j] = cpx.new(0, 0)
             end
         end
 
@@ -149,25 +172,27 @@ function ent.partial_trace(qubits, traced_indices)
                     end
                 end
                 reduced_density_matrix[basis_state_kept + 1][basis_state_kept + 1] = 
-                    reduced_density_matrix[basis_state_kept + 1][basis_state_kept + 1] + 
-                    full_density_matrix[global_state + 1][global_state + 1]
+                    cpx.add(reduced_density_matrix[basis_state_kept + 1][basis_state_kept + 1],
+                           full_density_matrix[global_state + 1][global_state + 1])
             end
         end
 
         return reduced_density_matrix
     end
-    if not pcall(compute_reduced_density) then
+    
+    local success, reduced_matrix = pcall(compute_reduced_density)
+    if not success then
         error("Failed to compute partial trace: " .. tostring(reduced_matrix))
     end
 
     return reduced_matrix
 end
 
-function ent.print_density_matrix(matrix)
+function ent.print_density_matrix(matrix: matrix)
     for _, row in ipairs(matrix) do
         local formatted_row = {}
         for _, val in ipairs(row) do
-            table.insert(formatted_row, string.format("%.4f", val))
+            table.insert(formatted_row, string.format("%.4f", val.r))
         end
         print(table.concat(formatted_row, "\t"))
     end

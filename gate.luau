@@ -316,6 +316,17 @@ function gate.fidelity(g1: gate, g2: gate): number
 	return math.abs(tr.r) / #g1
 end
 
+function gate.controlled_rotation(control: number, target: number, cos_theta: number, sin_theta: number): gate
+    -- If control qubit is |0⟩, do nothing (identity)
+    -- If control qubit is |1⟩, apply rotation by the specified angle
+    return gate.new_ex(4,
+        cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0), cpx.new(0, 0),
+        cpx.new(0, 0), cpx.new(1, 0), cpx.new(0, 0), cpx.new(0, 0),
+        cpx.new(0, 0), cpx.new(0, 0), cpx.new(cos_theta, 0), cpx.new(-sin_theta, 0),
+        cpx.new(0, 0), cpx.new(0, 0), cpx.new(sin_theta, 0), cpx.new(cos_theta, 0)
+    )
+end
+
 function gate.decompose(g: gate): {
 	gate | number
 }
