@@ -1,7 +1,7 @@
 +-OVERVIEW----------------------------------+-LICENSE-(MIT)---------------------------------------------------+
 | quantum computing simulation lib written  | MIT License                                                     |
 | in luau                                   |                                                                 |
-+-USAGE-------------------------------------+ Copyright (c) 2024 axtrct                                       |
++-USAGE-------------------------------------+ Copyright (c) 2024 veires                                       |
 | quantum.luau is the main file, require    |                                                                 |
 | it.                                       | Permission is hereby granted, free of charge, to any person     |
 +-STYLE-------------------------------------+ obtaining a copy of this software and associated documentation  |
@@ -24,7 +24,7 @@
 |                + SUFFIX +                 | FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR   |
 | - _ex: extra/expanded version of function | OTHER DEALINGS IN THE SOFTWARE.                                 |
 +-CREDITS-----------------------------------+-----------------------------------------------------------------+
-| made by: axtr       > @axtrct              used: - greg hewgill's picomath                         d8888b.  |
+| made by: veires     > @veires              used: - greg hewgill's picomath                         d8888b.  |
 |          jiface     > @ssynical                                                                 db VP  `8D  |
 |          plusgiant5 > @plusgiant5                                                               VP   oooY'  |
 |                                                                                                      ~~~b.  |
