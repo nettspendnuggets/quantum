@@ -1,3 +1,15 @@
+!! heya! if you're seeing this now, this isn't actively maintained anymore, as seen by the very very old
+!! commits.. lol... there are a lot of errors and a lot of stuff not done. if you want to continue this, it is
+!! encouraged, but the source is insanely messy and you're going to have a hard time fixing stuff. :(
+
+!! if you do though, well, congrats! this will probably be the last time i touch this repo, so...
+!! TO MY FUTURE EMPLOYER, PLEASEEEE HIRE ME.. I WROTE THIS WHEN I WAS IN 9TH-11TH GRADE... PLEASE....
+
+!! goodbye,
+!! archivistique, FKA veires
+
+ORIGINAL README:
+
 +-OVERVIEW----------------------------------+-LICENSE-(MIT)---------------------------------------------------+
 | quantum computing simulation lib written  | MIT License                                                     |
 | in luau                                   |                                                                 |
@@ -24,9 +36,9 @@
 |                + SUFFIX +                 | FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR   |
 | - _ex: extra/expanded version of function | OTHER DEALINGS IN THE SOFTWARE.                                 |
 +-CREDITS-----------------------------------+-----------------------------------------------------------------+
-| made by: veires     > @veires              used: - greg hewgill's picomath                         d8888b.  |
-|          jiface     > @ssynical                                                                 db VP  `8D  |
-|          plusgiant5 > @plusgiant5                                                               VP   oooY'  |
+| made by: archivistique > @archivistique    used: - greg hewgill's picomath                         d8888b.  |
+|          jiface        > @ssynical                                                              db VP  `8D  |
+|          plusgiant5    > @plusgiant5                                                            VP   oooY'  |
 |                                                                                                      ~~~b.  |
 |                                                                                                 db db   8D  |
 | hi guys please contribute to this please i'm too lazy we're too lazy so please                  VP Y8888P'  |
